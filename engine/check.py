@@ -1,0 +1,15 @@
+import requests
+
+# Paste your Gemini Key here
+API_KEY = "YOUR_GEMINI_KEY_HERE"
+url = f"https://generativelanguage.googleapis.com/v1/models?key=AIzaSyBs7Nv_Ln-83jv4-bvR7w8d2EDtRaNz5g8"
+
+try:
+    res = requests.get(url)
+    data = res.json()
+    print("\n--- YOUR PERMITTED MODELS ---")
+    for m in data.get('models', []):
+        # We want the ID (e.g., models/gemini-1.5-flash-8b)
+        print(f"ID: {m['name']}")
+except Exception as e:
+    print(f"Error: {e}")

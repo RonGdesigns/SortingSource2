@@ -1,0 +1,10 @@
+# Ignore build and release directories and large binaries for Vercel deployment
+release/
+dist/
+build/
+engine/dist/
+engine/build/
+*.exe
+*.pkg
+*.asar
+*.log
