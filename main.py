@@ -140,7 +140,8 @@ def ensure_playwright_browsers():
     import os
     
     # 1. Define the path
-    BROWSER_DIR = os.path.join(os.environ.get('APPDATA'), 'SortingSource', 'browsers')
+    APPDATA_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SortingSource')
+    BROWSER_DIR = os.path.join(APPDATA_DIR, 'browsers')
     os.environ["PLAYWRIGHT_BROWSERS_PATH"] = BROWSER_DIR
     
     # 2. Check if the Chromium folder already exists
