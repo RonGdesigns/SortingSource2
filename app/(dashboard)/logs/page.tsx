@@ -35,7 +35,7 @@ export default function DispatchLogs() {
   const fetchIMAPReplies = async () => {
     const savedVault = localStorage.getItem("ss_pitch_vault");
     if (!savedVault) {
-      setValidationError("No IMAP credentials found. Please save your Email settings in the Pitch Engine's Security Vault first.");
+      setValidationError("No IMAP credentials found. Save email configuration settings in the Pitch Engine parameters first.");
       return;
     }
 
@@ -43,7 +43,7 @@ export default function DispatchLogs() {
     const { senderEmail, appPassword, imapServer } = parsedVault;
 
     if (!senderEmail || !appPassword) {
-      setValidationError("Missing Email or App Password in Vault.");
+      setValidationError("Missing Sender Email or App Password in configuration.");
       return;
     }
 
@@ -98,99 +98,125 @@ export default function DispatchLogs() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F4F0] text-black p-8 selection:bg-black selection:text-white">
+    <div className="min-h-screen bg-[var(--color-canvas)] text-[var(--color-night)] p-4 lg:p-8" style={{ fontFamily: "var(--font-body)" }}>
       {validationError && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
-          <div className="border-4 border-white bg-black p-8 max-w-sm w-full">
-            <h3 className="text-xl font-black uppercase mb-4 text-white">System Error</h3>
-            <p className="text-sm font-mono text-white/70 mb-8">{validationError}</p>
-            <button onClick={() => setValidationError("")} className="w-full py-3 bg-white text-black font-bold uppercase border-4 border-transparent hover:bg-black hover:text-white hover:border-white transition-all">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
+          <div className="border-4 border-black bg-[var(--color-canvas)] p-8 max-w-sm w-full">
+            <h3 className="metro-display text-xl mb-4 text-[var(--color-night)] flex items-center gap-2">
+              <ShieldAlert className="text-[var(--color-transit-red)]" size={20} /> Action Required
+            </h3>
+            <p className="text-sm font-mono text-[var(--color-night)]/70 mb-8">{validationError}</p>
+            <button onClick={() => setValidationError("")} className="w-full metro-btn-primary">
               Acknowledge
             </button>
           </div>
         </div>
       )}
 
-      <header className="border-b-4 border-black pb-6 flex justify-between items-end mb-8">
+      <header className="border-b-5 border-black pb-6 flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
         <div>
-          <h1 className="text-5xl md:text-6xl font-black uppercase tracking-tighter mb-2 font-serif">Audit Logs</h1>
-          <p className="text-sm font-mono text-neutral-600 uppercase tracking-widest font-bold">SMTP & IMAP Relay</p>
+          <div className="metro-label" style={{ color: "var(--color-transit-red)", marginBottom: 6 }}>Global Engine v3.0</div>
+          <h1 className="metro-display text-5xl md:text-6xl text-[var(--color-night)]">Audit Logs</h1>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 border-2 border-green-500 bg-black">
-          <Activity size={16} className="text-green-500 animate-pulse" />
-          <span className="text-xs font-mono font-bold text-green-500 uppercase">Engine Online</span>
+        <div className="flex items-center gap-2 px-4 py-2 border-3 border-black bg-black">
+          <Activity className="text-[var(--color-teal)] animate-pulse" size={16} />
+          <span className="metro-label text-xs font-bold text-[var(--color-teal)]">Relay Active</span>
         </div>
       </header>
 
-      <div className="border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(200,200,200,1)] flex flex-col h-[700px]">
+      <div className="border-4 border-black bg-[var(--color-canvas)] flex flex-col h-[700px]">
+        {/* Tabs Control */}
         <div className="flex border-b-4 border-black">
-          <button onClick={() => setActiveTab('sent')} className={`flex-1 py-4 font-black uppercase tracking-widest text-sm flex justify-center items-center gap-2 transition-colors border-r-2 border-black ${activeTab === 'sent' ? 'bg-black text-white' : 'hover:bg-neutral-100'}`}>
-            <Send size={16} /> Outbound Logs
+          <button 
+            onClick={() => setActiveTab('sent')} 
+            className={`flex-1 py-3 md:py-4 font-bold uppercase tracking-wider md:tracking-widest text-xs md:text-sm flex justify-center items-center gap-1.5 md:gap-2 border-r-4 border-black transition-colors ${activeTab === 'sent' ? 'bg-black text-[var(--color-canvas)]' : 'hover:bg-black/5 text-[var(--color-night)]'}`}
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            <Send size={14} /> Outbound Logs
           </button>
-          <button onClick={() => { setActiveTab('replies'); if (replies.length === 0) fetchIMAPReplies(); }} className={`flex-1 py-4 font-black uppercase tracking-widest text-sm flex justify-center items-center gap-2 transition-colors ${activeTab === 'replies' ? 'bg-black text-white' : 'hover:bg-neutral-100'}`}>
-            <Inbox size={16} /> Inbox Replies
+          <button 
+            onClick={() => { setActiveTab('replies'); if (replies.length === 0) fetchIMAPReplies(); }} 
+            className={`flex-1 py-3 md:py-4 font-bold uppercase tracking-wider md:tracking-widest text-xs md:text-sm flex justify-center items-center gap-1.5 md:gap-2 transition-colors ${activeTab === 'replies' ? 'bg-black text-[var(--color-canvas)]' : 'hover:bg-black/5 text-[var(--color-night)]'}`}
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            <Inbox size={14} /> Inbox Replies
           </button>
         </div>
 
-        <div className="p-4 border-b-2 border-black flex justify-between items-center bg-black text-white">
-          <div className="font-mono text-xs uppercase font-bold flex items-center gap-2">
-            <Activity size={14} /> {activeTab === 'sent' ? `${logs.length} Total Dispatches` : `${replies.length} Total Replies`}
+        {/* Tab Sub-Header Actions */}
+        <div className="p-4 border-b-2 border-black bg-black text-[var(--color-canvas)] flex justify-between items-center flex-wrap gap-2">
+          <div className="metro-label text-xs font-bold flex items-center gap-2">
+            <Activity size={14} /> {activeTab === 'sent' ? `${logs.length} Transmissions` : `${replies.length} Replies`}
           </div>
           <div className="flex gap-4">
             {activeTab === 'replies' && (
-              <button onClick={fetchIMAPReplies} disabled={isCheckingReplies} className="text-xs font-bold uppercase hover:underline flex items-center gap-1">
+              <button 
+                onClick={fetchIMAPReplies} 
+                disabled={isCheckingReplies} 
+                className="text-xs font-bold uppercase hover:underline flex items-center gap-1"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
                 <RefreshCcw size={14} className={isCheckingReplies ? "animate-spin" : ""} /> Sync IMAP
               </button>
             )}
-            <button onClick={exportToCSV} className="text-xs font-bold uppercase hover:underline flex items-center gap-1">
+            <button 
+              onClick={exportToCSV} 
+              className="text-xs font-bold uppercase hover:underline flex items-center gap-1"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
               <Download size={14} /> Export CSV
             </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto bg-white text-black">
-          {isLoading && activeTab === 'sent' || isCheckingReplies && activeTab === 'replies' ? (
+        {/* Tab Content Table */}
+        <div className="flex-1 overflow-x-auto bg-[var(--color-canvas)] text-[var(--color-night)]">
+          {(isLoading && activeTab === 'sent') || (isCheckingReplies && activeTab === 'replies') ? (
             <div className="flex flex-col items-center justify-center h-full text-neutral-500 font-mono text-sm gap-4 uppercase font-bold">
               <RefreshCcw size={32} className="animate-spin text-black" />
               {activeTab === 'sent' ? "Querying database..." : "Establishing IMAP handshake..."}
             </div>
           ) : (
-            <table className="w-full text-left whitespace-nowrap min-w-[800px]">
-              <thead className="bg-white text-neutral-500 font-mono text-xs uppercase border-b-2 border-black sticky top-0 font-bold">
-                {activeTab === 'sent' ? (
-                  <tr>
-                    <th className="p-4">Timestamp (UTC)</th>
-                    <th className="p-4">Target Business</th>
-                    <th className="p-4">Email Vector</th>
-                  </tr>
-                ) : (
-                  <tr>
-                    <th className="p-4">Date Received</th>
-                    <th className="p-4">Sender</th>
-                    <th className="p-4">Subject</th>
-                  </tr>
-                )}
+            <table className="metro-table" style={{ minWidth: 800, background: "var(--color-canvas)" }}>
+              <thead>
+                <tr style={{ background: "rgba(26,26,31,0.04)" }}>
+                  {activeTab === 'sent' ? (
+                    <>
+                      <th className="p-4">Timestamp (UTC)</th>
+                      <th className="p-4">Target Business</th>
+                      <th className="p-4">Email Vector</th>
+                    </>
+                  ) : (
+                    <>
+                      <th className="p-4">Date Received</th>
+                      <th className="p-4">Sender</th>
+                      <th className="p-4">Subject</th>
+                    </>
+                  )}
+                </tr>
               </thead>
-              <tbody className="divide-y-2 divide-neutral-200 font-mono text-sm">
+              <tbody>
                 {activeTab === 'sent' && logs.map((log, idx) => (
-                  <tr key={idx} className="hover:bg-neutral-100">
-                    <td className="p-4 text-neutral-500 flex items-center gap-2 font-bold"><Clock size={14} /> {log.date_sent}</td>
-                    <td className="p-4 font-bold uppercase truncate max-w-[300px]">{log.business_name}</td>
-                    <td className="p-4 truncate font-bold">{log.email_sent_to}</td>
+                  <tr key={idx}>
+                    <td className="p-4 flex items-center gap-2 font-mono text-xs"><Clock size={14} /> {log.date_sent}</td>
+                    <td>
+                      <div className="metro-display text-sm">{log.business_name}</div>
+                    </td>
+                    <td className="p-4 font-mono text-sm">{log.email_sent_to}</td>
                   </tr>
                 ))}
                 {activeTab === 'sent' && logs.length === 0 && (
-                  <tr><td colSpan={3} className="p-12 text-center text-neutral-500 uppercase font-bold">No outbound transmissions found.</td></tr>
+                  <tr><td colSpan={3} className="p-12 text-center text-neutral-500 uppercase font-bold text-sm font-mono">No outbound transmissions found.</td></tr>
                 )}
                 {activeTab === 'replies' && replies.map((reply, idx) => (
-                  <tr key={idx} className="hover:bg-neutral-100">
-                    <td className="p-4 text-neutral-500 flex items-center gap-2 font-bold"><Clock size={14} /> {reply.date}</td>
-                    <td className="p-4 font-bold uppercase truncate max-w-[300px]">{reply.sender}</td>
-                    <td className="p-4 truncate max-w-[400px] font-bold">{reply.subject}</td>
+                  <tr key={idx}>
+                    <td className="p-4 flex items-center gap-2 font-mono text-xs"><Clock size={14} /> {reply.date}</td>
+                    <td className="p-4 font-bold">{reply.sender}</td>
+                    <td className="p-4 truncate max-w-[400px]">{reply.subject}</td>
                   </tr>
                 ))}
                 {activeTab === 'replies' && replies.length === 0 && !isCheckingReplies && (
-                  <tr><td colSpan={3} className="p-12 text-center text-neutral-500 uppercase font-bold">No inbound replies detected. Click Sync IMAP.</td></tr>
+                  <tr><td colSpan={3} className="p-12 text-center text-neutral-500 uppercase font-bold text-sm font-mono">No inbound replies detected. Click Sync IMAP.</td></tr>
                 )}
               </tbody>
             </table>

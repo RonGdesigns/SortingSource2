@@ -1,57 +1,265 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;900&family=Barlow:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
-/* 1. CORE SYSTEM VARIABLES */
+/* =============================================
+   METRO DESIGN CONSTITUTION — TOKEN SYSTEM
+   Warsaw Constructivist-Bauhaus
+   ============================================= */
+
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  
-  /* Brand Accents (High Contrast, Less Glow) */
-  --accent-cyan: #06b6d4;
-  --accent-purple: #8b5cf6;
-  --accent-emerald: #10b981;
+  --color-canvas:       #EDE8DC;  /* warm cream — the only background */
+  --color-transit-red:  #D42B1E;  /* dominant energy, large fields */
+  --color-teal:         #2E7E82;  /* secondary field, depth */
+  --color-amber:        #F0A500;  /* accent stripe only, never fill */
+  --color-night:        #1A1A1F;  /* near-black, type & details */
+  --color-chalk:        #EDE8DC;  /* same as canvas, window fill */
+
+  /* Typography tokens */
+  --font-display:       'Barlow Condensed', sans-serif;
+  --font-body:          'Barlow', sans-serif;
+
+  /* Type scale */
+  --text-xs:    0.625rem;
+  --text-sm:    0.75rem;
+  --text-base:  1rem;
+  --text-lg:    1.25rem;
+  --text-xl:    1.5rem;
+  --text-2xl:   2rem;
+  --text-3xl:   3.5rem;
+  --text-mega:  clamp(3.5rem, 12vw, 10rem);
+
+  /* 8px base spacing */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --space-32: 128px;
 }
 
-/* 2. TAILWIND V4 THEME MAPPING */
+/* =============================================
+   TAILWIND V4 THEME MAP
+   ============================================= */
 @theme inline {
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-fira);
-  --font-serif: var(--font-playfair);
-  
-  --color-brand-cyan: var(--accent-cyan);
-  --color-brand-purple: var(--accent-purple);
-  --color-brand-green: var(--accent-emerald);
+  --font-sans:  var(--font-body);
+  --font-mono:  var(--font-display);
+  --font-serif: var(--font-display);
+
+  --color-canvas:      #EDE8DC;
+  --color-red:         #D42B1E;
+  --color-teal:        #2E7E82;
+  --color-amber:       #F0A500;
+  --color-night:       #1A1A1F;
 }
 
-/* 3. BASE STYLES & TEXTURE */
+/* =============================================
+   CONSTITUTION BASE
+   ============================================= */
+*, *::before, *::after {
+  box-sizing: border-box;
+  border-radius: 0 !important; /* Hard geometry — no softening */
+  box-shadow: none !important;  /* Depth via overlapping flat fields only */
+}
+
+html {
+  background: var(--color-canvas);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), ui-sans-serif, system-ui;
+  background: var(--color-canvas);
+  color: var(--color-night);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  
-  /* Noise Texture for depth and anti-flat look */
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+  /* NO noise, NO gradients, NO textures */
 }
 
-/* 4. CUSTOM SCROLLBAR (Cleaning up your layout.tsx) */
-@layer base {
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #262626;
-    border-radius: 10px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #404040;
-  }
+/* Selection */
+::selection {
+  background: var(--color-night);
+  color: var(--color-canvas);
 }
 
-/* 5. THEME UTILITIES */
-.theme-text { color: var(--accent-cyan); }
-.theme-border { border-color: var(--accent-cyan); }
-.theme-bg { background-color: var(--accent-cyan); }
+/* =============================================
+   METRO SCROLLBAR
+   ============================================= */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--color-canvas); }
+::-webkit-scrollbar-thumb { background: var(--color-night); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-transit-red); }
+
+/* =============================================
+   UTILITY CLASSES
+   ============================================= */
+
+/* Display type */
+.metro-display {
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+
+.metro-sub {
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+}
+
+.metro-label {
+  font-family: var(--font-display);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+  font-size: var(--text-xs);
+}
+
+/* Color field classes */
+.field-red   { background: var(--color-transit-red); color: var(--color-canvas); }
+.field-teal  { background: var(--color-teal); color: var(--color-canvas); }
+.field-night { background: var(--color-night); color: var(--color-canvas); }
+.field-canvas { background: var(--color-canvas); color: var(--color-night); }
+
+/* Amber stripe device */
+.stripe-amber {
+  width: 6px;
+  background: var(--color-amber);
+  flex-shrink: 0;
+}
+
+/* Hard border — uses night color (no box-shadow) */
+.metro-border { border: 3px solid var(--color-night); }
+.metro-border-heavy { border: 5px solid var(--color-night); }
+
+/* Train entry animation */
+@keyframes train-enter {
+  from { transform: translateX(-100%); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+.train-enter {
+  animation: train-enter 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Clip-path wipe reveal */
+@keyframes wipe-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0% 0 0); }
+}
+
+.wipe-reveal {
+  animation: wipe-reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Staggered children */
+.stagger > * { opacity: 0; animation: train-enter 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 80ms; }
+.stagger > *:nth-child(3) { animation-delay: 160ms; }
+.stagger > *:nth-child(4) { animation-delay: 240ms; }
+
+/* Input base */
+.metro-input {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--color-night);
+  padding: 8px 4px;
+  outline: none;
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-night);
+  transition: border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+}
+.metro-input:focus { border-color: var(--color-transit-red); }
+.metro-input::placeholder { color: rgba(26,26,31,0.35); font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+/* Button — Transit Red primary */
+.metro-btn-primary {
+  background: var(--color-transit-red);
+  color: var(--color-canvas);
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding: 16px 32px;
+  border: 3px solid var(--color-transit-red);
+  cursor: pointer;
+  transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s;
+}
+.metro-btn-primary:hover {
+  background: var(--color-night);
+  border-color: var(--color-night);
+}
+
+/* Button — night ghost */
+.metro-btn-ghost {
+  background: transparent;
+  color: var(--color-night);
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding: 16px 32px;
+  border: 3px solid var(--color-night);
+  cursor: pointer;
+  transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s;
+}
+.metro-btn-ghost:hover {
+  background: var(--color-night);
+  color: var(--color-canvas);
+}
+
+/* Toggle checkbox — metro style */
+.metro-toggle {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-night);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.metro-toggle.active { background: var(--color-transit-red); border-color: var(--color-transit-red); }
+.metro-toggle.active::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--color-canvas);
+  display: block;
+}
+
+/* Line indicator badge (constitution §219) */
+.metro-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50% !important; /* ONLY exception per §223 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--color-canvas);
+  flex-shrink: 0;
+}
+
+/* Table */
+.metro-table { border-collapse: collapse; width: 100%; }
+.metro-table th, .metro-table td { padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--color-night); }
+.metro-table th { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3em; font-size: 0.625rem; color: rgba(26,26,31,0.5); }
+.metro-table tr:hover td { background: rgba(26,26,31,0.04); }
+
+/* Custom scrollbar for content areas */
+.metro-scroll::-webkit-scrollbar { width: 4px; }
+.metro-scroll::-webkit-scrollbar-track { background: var(--color-canvas); }
+.metro-scroll::-webkit-scrollbar-thumb { background: var(--color-night); }

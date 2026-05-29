@@ -2,10 +2,76 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import {
-  Loader2, Activity, Globe, Download,
-  ArrowUpDown, Trash2, Target, Zap, Settings2, Save,
-  ShieldAlert, AlertTriangle
+  Loader2, Activity, Download, ArrowUpDown, Trash2, Target, Zap, Save, AlertTriangle
 } from "lucide-react";
+
+function MetroToggle({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        padding: 0,
+        fontFamily: "var(--font-display)",
+        fontWeight: 900,
+        fontSize: "0.625rem",
+        textTransform: "uppercase",
+        letterSpacing: "0.2em",
+        color: active ? "var(--color-night)" : "rgba(26,26,31,0.45)",
+        transition: "color 0.15s",
+      }}
+    >
+      <div
+        style={{
+          width: 14,
+          height: 14,
+          border: `2px solid ${active ? "var(--color-transit-red)" : "var(--color-night)"}`,
+          background: active ? "var(--color-transit-red)" : "transparent",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.15s",
+          flexShrink: 0,
+        }}
+      >
+        {active && <div style={{ width: 5, height: 5, background: "var(--color-canvas)" }} />}
+      </div>
+      {label}
+    </button>
+  );
+}
+
+function Modal({ title, children, icon }: { title: string; children: React.ReactNode; icon?: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 50,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "rgba(26,26,31,0.88)",
+        padding: 16,
+      }}
+    >
+      <div
+        className="field-canvas"
+        style={{
+          maxWidth: 420, width: "100%",
+          border: "5px solid var(--color-night)",
+          padding: 40,
+        }}
+      >
+        <h3 className="metro-display" style={{ fontSize: "1.5rem", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+          {icon}{title}
+        </h3>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const [resetKey, setResetKey] = useState(0);
@@ -24,13 +90,13 @@ export default function Dashboard() {
   const [useBlacklist, setUseBlacklist] = useState(true);
   const [rememberKeys, setRememberKeys] = useState(false);
   const [powerSearch, setPowerSearch] = useState(false);
-  
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState("System idle. Ready to hunt.");
   const [leads, setLeads] = useState<any[]>([]);
-  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
   const [leadToDelete, setLeadToDelete] = useState<any>(null);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -51,127 +117,63 @@ export default function Dashboard() {
       if (parsed.keepExisting !== undefined) setKeepExisting(parsed.keepExisting);
       if (parsed.useBlacklist !== undefined) setUseBlacklist(parsed.useBlacklist);
       if (parsed.powerSearch !== undefined) setPowerSearch(parsed.powerSearch);
-      if (parsed.campaignName) {
-        setCampaignName(parsed.campaignName);
-        activeCampaign = parsed.campaignName;
-      }
+      if (parsed.campaignName) { setCampaignName(parsed.campaignName); activeCampaign = parsed.campaignName; }
     }
-
     fetch(`${API_URL}/api/config/api-key`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.api_key) {
-          setApiKey(data.api_key);
-          setRememberKeys(true);
-        }
-      }).catch(() => console.log("Engine offline"));
-
+      .then(r => r.json())
+      .then(d => { if (d.api_key) { setApiKey(d.api_key); setRememberKeys(true); } })
+      .catch(() => {});
     fetchLeadsDirect(activeCampaign);
   }, [API_URL]);
 
   const fetchLeadsDirect = async (targetCampaign: string) => {
     try {
       const response = await fetch(`${API_URL}/api/leads/${encodeURIComponent(targetCampaign)}`);
-      if (response.ok) {
-        const data = await response.json();
-        setLeads(data.leads);
-      }
-    } catch (error) { setStatusMessage("ERROR: Engine offline. Check deployment."); }
+      if (response.ok) { const data = await response.json(); setLeads(data.leads); }
+    } catch { setStatusMessage("ERROR: Engine offline."); }
   };
 
   const fetchLeads = () => fetchLeadsDirect(campaignName);
 
   const wipeCampaign = async () => {
     try {
-      setIsLoading(true);
-      setShowDeleteConfirm(false);
-      setStatusMessage("Wiping database records...");
-
-      const res = await fetch(`${API_URL}/api/wipe`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ campaign_name: campaignName })
-      });
-
-      if (res.ok) {
-        setLeads([]);
-        setResetKey(prev => prev + 1);
-        setStatusMessage("Table wiped clean.");
-      }
-    } catch (e) {
-      setStatusMessage("Wipe failed. Check engine.");
-    } finally {
-      setIsLoading(false);
-    }
+      setIsLoading(true); setShowDeleteConfirm(false); setStatusMessage("Wiping database records...");
+      const res = await fetch(`${API_URL}/api/wipe`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ campaign_name: campaignName }) });
+      if (res.ok) { setLeads([]); setResetKey(p => p + 1); setStatusMessage("Table wiped clean."); }
+    } catch { setStatusMessage("Wipe failed."); } finally { setIsLoading(false); }
   };
 
   const executeHunt = async () => {
-    if (!niche) {
-      setValidationError("Missing Niche keyword for the hunt.");
-      return;
-    }
-
-    setIsLoading(true);
-    setStatusMessage("Acquiring targets...");
-    const placesVersion = localStorage.getItem('places_version') || "v1";
-
+    if (!niche) { setValidationError("Missing Niche keyword for the hunt."); return; }
+    setIsLoading(true); setStatusMessage("Acquiring targets...");
+    const placesVersion = localStorage.getItem("places_version") || "v1";
     try {
       const response = await fetch(`${API_URL}/api/hunt`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          niche, city, region, country, zip_code: zipCode, intl_postal: intlPostal,
-          max_results: parseInt(maxResults), api_key: apiKey,
-          campaign_name: campaignName, clear_table: !keepExisting,
-          use_blacklist: useBlacklist,
-          international: international, save_key: rememberKeys,
-          places_model_override: placesVersion
-        }),
+        body: JSON.stringify({ niche, city, region, country, zip_code: zipCode, intl_postal: intlPostal, max_results: parseInt(maxResults), api_key: apiKey, campaign_name: campaignName, clear_table: !keepExisting, use_blacklist: useBlacklist, international, save_key: rememberKeys, places_model_override: placesVersion }),
       });
-
-      if (response.ok) {
-        setStatusMessage("Hunt successful.");
-        await fetchLeads();
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        setStatusMessage(`API Error: ${errorData.detail || "Unknown Engine Failure"}`);
-      }
+      if (response.ok) { setStatusMessage("Hunt successful."); await fetchLeads(); }
+      else { const e = await response.json().catch(() => ({})); setStatusMessage(`API Error: ${e.detail || "Unknown Engine Failure"}`); }
     } catch (error: any) {
       setStatusMessage(`Critical Engine Failure: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
+    } finally { setIsLoading(false); }
   };
 
   const deleteLead = async () => {
     if (!leadToDelete) return;
     try {
-      const response = await fetch(`${API_URL}/api/delete-lead`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ campaign_name: campaignName, lead_name: leadToDelete.Name }),
-      });
-      if (response.ok) {
-        setStatusMessage(`Deleted ${leadToDelete.Name}.`);
-        await fetchLeads();
-      } else {
-        setStatusMessage("Failed to delete lead.");
-      }
-    } catch (e) {
-      setStatusMessage("Engine connection refused during deletion.");
-    } finally {
-      setLeadToDelete(null);
-    }
+      const r = await fetch(`${API_URL}/api/delete-lead`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ campaign_name: campaignName, lead_name: leadToDelete.Name }) });
+      if (r.ok) { setStatusMessage(`Deleted ${leadToDelete.Name}.`); await fetchLeads(); }
+      else setStatusMessage("Failed to delete lead.");
+    } catch { setStatusMessage("Engine connection refused."); } finally { setLeadToDelete(null); }
   };
 
   const exportToCSV = () => {
-    if (leads.length === 0) {
-      setValidationError("No data available to export.");
-      return;
-    }
+    if (leads.length === 0) { setValidationError("No data to export."); return; }
     const headers = Object.keys(leads[0]).join(",");
-    const rows = leads.map(lead => Object.values(lead).map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
-    const blob = new Blob([`${headers}\n${rows}`], { type: 'text/csv' });
+    const rows = leads.map(l => Object.values(l).map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([`${headers}\n${rows}`], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -180,245 +182,325 @@ export default function Dashboard() {
   };
 
   const saveSearchPreset = () => {
-    const config = { niche, city, region, zipCode, intlPostal, country, maxResults, campaignName, international, keepExisting, useBlacklist, powerSearch };
-    localStorage.setItem("ss_search_preset", JSON.stringify(config));
+    localStorage.setItem("ss_search_preset", JSON.stringify({ niche, city, region, zipCode, intlPostal, country, maxResults, campaignName, international, keepExisting, useBlacklist, powerSearch }));
     setStatusMessage("Search configuration saved.");
   };
 
   const requestSort = (key: string) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig?.key === key && sortConfig.direction === 'asc') direction = 'desc';
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig?.key === key && sortConfig.direction === "asc") direction = "desc";
     setSortConfig({ key, direction });
   };
 
   const sortedLeads = useMemo(() => {
-    let sortable = [...leads];
+    let s = [...leads];
     if (sortConfig) {
-      sortable.sort((a, b) => {
-        let aV = a[sortConfig.key];
-        let bV = b[sortConfig.key];
-        if (sortConfig.key === 'Rating') { aV = parseFloat(aV) || 0; bV = parseFloat(bV) || 0; }
-        if (aV < bV) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (aV > bV) return sortConfig.direction === 'asc' ? 1 : -1;
+      s.sort((a, b) => {
+        let aV = a[sortConfig.key]; let bV = b[sortConfig.key];
+        if (sortConfig.key === "Rating") { aV = parseFloat(aV) || 0; bV = parseFloat(bV) || 0; }
+        if (aV < bV) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aV > bV) return sortConfig.direction === "asc" ? 1 : -1;
         return 0;
       });
     }
-    return sortable;
+    return s;
   }, [leads, sortConfig]);
 
+  const inputStyle: React.CSSProperties = {
+    background: "transparent", border: "none", borderBottom: "2px solid var(--color-night)",
+    padding: "8px 0", outline: "none", fontFamily: "var(--font-display)", fontWeight: 600,
+    fontSize: "0.875rem", color: "var(--color-night)", width: "100%", textTransform: "uppercase",
+    letterSpacing: "0.05em", transition: "border-color 0.2s",
+  };
+
   return (
-    <div key={resetKey} className="flex min-h-screen bg-[#F4F4F0] text-black p-8 overflow-y-auto selection:bg-black selection:text-white">
-      <main className="max-w-6xl mx-auto w-full space-y-12 pb-24">
-        
-        {/* HEADER */}
-        <header className="border-b-4 border-black pb-6 flex justify-between items-end">
-          <div>
-            <h1 className="text-5xl md:text-6xl font-black uppercase tracking-tighter mb-2 font-serif">Target Hunter</h1>
-            <p className="text-sm font-mono text-neutral-600 uppercase tracking-widest font-bold">Global Engine v3.0</p>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 border-2 border-green-500 bg-black">
-            <Activity size={16} className="text-green-500 animate-pulse" />
-            <span className="text-xs font-mono font-bold text-green-500 uppercase">Engine Online</span>
-          </div>
-        </header>
+    <div key={resetKey} style={{ padding: "clamp(24px, 4vw, 48px)", fontFamily: "var(--font-body)" }}>
 
-        {/* CONTROLS */}
-        <section className="bg-white text-black p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] relative">
-          <div className="flex justify-between items-center mb-8 border-b-2 border-black pb-4">
-            <h2 className="text-xl font-black uppercase flex items-center gap-2">
-              <Target size={24} /> Engine Parameters
-            </h2>
-            <div className="font-mono text-xs bg-black text-white px-3 py-1 font-bold">
-              {`> ${statusMessage}`}
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="col-span-3">
-                <label className="text-xs font-bold uppercase block mb-2">Niche / Keyword</label>
-                <input placeholder="Luxury Rooftop Bars..." value={niche} onChange={e => setNiche(e.target.value)} className="w-full bg-transparent border-b-2 border-black p-2 outline-none font-mono focus:bg-black/5 transition-colors" />
-              </div>
-              <div className="col-span-1">
-                <label className="text-xs font-bold uppercase block mb-2">Limit</label>
-                <input type="number" min="1" value={maxResults} onChange={e => setMaxResults(e.target.value)} className="w-full bg-transparent border-b-2 border-black p-2 outline-none font-mono focus:bg-black/5 transition-colors" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <label className="text-xs font-bold uppercase block mb-2">City</label>
-                <input value={city} onChange={e => setCity(e.target.value)} className="w-full bg-transparent border-b-2 border-black p-2 outline-none font-mono" />
-              </div>
-              <div>
-                <label className="text-xs font-bold uppercase block mb-2">Region</label>
-                <input value={region} onChange={e => setRegion(e.target.value)} className="w-full bg-transparent border-b-2 border-black p-2 outline-none font-mono" />
-              </div>
-              <div>
-                <label className="text-xs font-bold uppercase block mb-2">Postal</label>
-                <input value={zipCode} onChange={e => setZipCode(e.target.value)} className="w-full bg-transparent border-b-2 border-black p-2 outline-none font-mono" />
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-4 py-4">
-              <ToggleSwitch label="Power Search" active={powerSearch} onClick={() => setPowerSearch(!powerSearch)} />
-              <ToggleSwitch label="Accumulate" active={keepExisting} onClick={() => setKeepExisting(!keepExisting)} />
-              <ToggleSwitch label="Skip Known" active={useBlacklist} onClick={() => setUseBlacklist(!useBlacklist)} />
-              <ToggleSwitch label="Save Key" active={rememberKeys} onClick={() => setRememberKeys(!rememberKeys)} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t-2 border-black">
-              <div>
-                <label className="text-xs font-bold uppercase block mb-2">Campaign Name</label>
-                <input value={campaignName} onChange={e => setCampaignName(e.target.value)} className="w-full bg-transparent border-b-2 border-black p-2 outline-none font-mono focus:bg-black/5 transition-colors" />
-              </div>
-
-              {/* MODALS */}
+      {/* Modals */}
       {validationError && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
-          <div className="border-4 border-white bg-black p-8 max-w-sm w-full shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
-            <h3 className="text-xl font-black uppercase mb-4 text-white flex items-center gap-2"><AlertTriangle size={24} className="text-yellow-500" /> Action Required</h3>
-            <p className="text-sm font-mono text-white/70 mb-8">{validationError}</p>
-            <button onClick={() => setValidationError("")} className="w-full py-3 bg-white text-black font-bold uppercase border-4 border-transparent hover:bg-black hover:text-white hover:border-white transition-all">
-              Acknowledge
-            </button>
-          </div>
-        </div>
+        <Modal title="Action Required" icon={<AlertTriangle size={20} color="var(--color-amber)" />}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "rgba(26,26,31,0.7)", marginBottom: 24, lineHeight: 1.6 }}>{validationError}</p>
+          <button onClick={() => setValidationError("")} className="metro-btn-primary" style={{ width: "100%" }}>Acknowledge</button>
+        </Modal>
       )}
-
       {leadToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
-          <div className="border-4 border-white bg-black p-8 max-w-sm w-full shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
-            <h3 className="text-xl font-black uppercase mb-4 text-white flex items-center gap-2"><Trash2 size={24} className="text-red-500" /> Confirm Deletion</h3>
-            <p className="text-sm font-mono text-white/70 mb-8">Are you sure you want to delete <strong className="text-white">{leadToDelete.Name}</strong> from this campaign?</p>
-            <div className="flex gap-4">
-              <button onClick={deleteLead} className="flex-1 py-3 bg-red-600 text-white font-bold uppercase hover:bg-red-700 transition-colors">
-                Yes, Delete
-              </button>
-              <button onClick={() => setLeadToDelete(null)} className="flex-1 py-3 bg-white text-black font-bold uppercase hover:bg-neutral-200 transition-colors">
-                Cancel
-              </button>
-            </div>
+        <Modal title="Confirm Deletion" icon={<Trash2 size={20} color="var(--color-transit-red)" />}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "rgba(26,26,31,0.7)", marginBottom: 24, lineHeight: 1.6 }}>
+            Delete <strong>{leadToDelete.Name}</strong> from this campaign?
+          </p>
+          <div style={{ display: "flex", gap: 12 }}>
+            <button onClick={deleteLead} className="metro-btn-primary" style={{ flex: 1, justifyContent: "center" }}>Yes, Delete</button>
+            <button onClick={() => setLeadToDelete(null)} className="metro-btn-ghost" style={{ flex: 1, justifyContent: "center" }}>Cancel</button>
           </div>
-        </div>
+        </Modal>
+      )}
+      {showDeleteConfirm && (
+        <Modal title="Wipe Campaign" icon={<Trash2 size={20} color="var(--color-transit-red)" />}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "rgba(26,26,31,0.7)", marginBottom: 24, lineHeight: 1.6 }}>
+            Wipe all records for <strong>{campaignName}</strong>?
+          </p>
+          <div style={{ display: "flex", gap: 12 }}>
+            <button onClick={wipeCampaign} className="metro-btn-primary" style={{ flex: 1, justifyContent: "center" }}>Yes, Wipe</button>
+            <button onClick={() => setShowDeleteConfirm(false)} className="metro-btn-ghost" style={{ flex: 1, justifyContent: "center" }}>Cancel</button>
+          </div>
+        </Modal>
       )}
 
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
-          <div className="border-4 border-white bg-black p-8 max-w-sm w-full shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
-            <h3 className="text-xl font-black uppercase mb-4 text-white flex items-center gap-2"><Trash2 size={24} className="text-red-500" /> Wipe Campaign</h3>
-            <p className="text-sm font-mono text-white/70 mb-8">Are you sure you want to completely wipe all records for <strong className="text-white">{campaignName}</strong>?</p>
-            <div className="flex gap-4">
-              <button onClick={wipeCampaign} className="flex-1 py-3 bg-red-600 text-white font-bold uppercase hover:bg-red-700 transition-colors">
-                Yes, Wipe
-              </button>
-              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-3 bg-white text-black font-bold uppercase hover:bg-neutral-200 transition-colors">
-                Cancel
-              </button>
-            </div>
+      {/* Header */}
+      <header className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 border-b-[5px] border-[var(--color-night)] pb-6 mb-10">
+        <div>
+          <div className="metro-label" style={{ color: "var(--color-transit-red)", marginBottom: 6 }}>Global Engine v3.0</div>
+          <h1 className="metro-display" style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)", color: "var(--color-night)", lineHeight: 1 }}>Target Hunter</h1>
+        </div>
+        <div
+          className="field-night self-start sm:self-auto"
+          style={{ padding: "8px 16px", display: "flex", alignItems: "center", gap: 8 }}
+        >
+          <Activity size={14} color="var(--color-teal)" style={{ animation: "pulse 2s infinite" }} />
+          <span className="metro-label" style={{ color: "var(--color-teal)" }}>Engine Online</span>
+        </div>
+      </header>
+
+      {/* Controls */}
+      <section
+        className="field-canvas border-[5px] border-[var(--color-night)] p-6 md:p-10 mb-10"
+      >
+        {/* Section header */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8 border-b-3 border-[var(--color-night)] pb-4">
+          <div className="flex items-center gap-2">
+            <div style={{ width: 6, height: 24, background: "var(--color-transit-red)" }} />
+            <h2 className="metro-display" style={{ fontSize: "1.25rem", color: "var(--color-night)", display: "flex", alignItems: "center", gap: 8 }}>
+              <Target size={18} /> Engine Parameters
+            </h2>
+          </div>
+          <div
+            className="field-night self-start md:self-auto text-xs"
+            style={{ padding: "6px 14px", fontFamily: "var(--font-display)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--color-amber)", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+          >
+            {`> ${statusMessage}`}
           </div>
         </div>
-      )}            </div>
 
-            <div className="flex justify-between items-center pt-8">
-              <button onClick={saveSearchPreset} className="text-xs font-bold uppercase flex items-center gap-2 hover:underline">
-                <Save size={16} /> Save Preset
+        <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+          {/* Niche + limit */}
+          <div className="grid grid-cols-1 md:grid-cols-[3fr_1fr] gap-6">
+            <div>
+              <label className="metro-label" style={{ color: "rgba(26,26,31,0.5)", display: "block", marginBottom: 8 }}>Niche / Keyword</label>
+              <input id="hunt-niche" style={inputStyle} placeholder="Luxury Rooftop Bars..." value={niche} onChange={e => setNiche(e.target.value)}
+                onFocus={e => (e.target.style.borderBottomColor = "var(--color-transit-red)")}
+                onBlur={e => (e.target.style.borderBottomColor = "var(--color-night)")} />
+            </div>
+            <div>
+              <label className="metro-label" style={{ color: "rgba(26,26,31,0.5)", display: "block", marginBottom: 8 }}>Limit</label>
+              <input id="hunt-limit" type="number" min="1" style={inputStyle} value={maxResults} onChange={e => setMaxResults(e.target.value)}
+                onFocus={e => (e.target.style.borderBottomColor = "var(--color-transit-red)")}
+                onBlur={e => (e.target.style.borderBottomColor = "var(--color-night)")} />
+            </div>
+          </div>
+
+          {/* City / Region / Postal */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { id: "hunt-city", label: "City", val: city, set: setCity },
+              { id: "hunt-region", label: "Region", val: region, set: setRegion },
+              { id: "hunt-postal", label: "Postal", val: zipCode, set: setZipCode },
+            ].map(f => (
+              <div key={f.id}>
+                <label className="metro-label" style={{ color: "rgba(26,26,31,0.5)", display: "block", marginBottom: 8 }}>{f.label}</label>
+                <input id={f.id} style={inputStyle} value={f.val} onChange={e => f.set(e.target.value)}
+                  onFocus={e => (e.target.style.borderBottomColor = "var(--color-transit-red)")}
+                  onBlur={e => (e.target.style.borderBottomColor = "var(--color-night)")} />
+              </div>
+            ))}
+          </div>
+
+          {/* Toggles */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 24 }}>
+            <MetroToggle label="Power Search" active={powerSearch} onClick={() => setPowerSearch(!powerSearch)} />
+            <MetroToggle label="Accumulate" active={keepExisting} onClick={() => setKeepExisting(!keepExisting)} />
+            <MetroToggle label="Skip Known" active={useBlacklist} onClick={() => setUseBlacklist(!useBlacklist)} />
+            <MetroToggle label="Save Key" active={rememberKeys} onClick={() => setRememberKeys(!rememberKeys)} />
+          </div>
+
+          {/* Campaign + actions */}
+          <div className="border-t-3 border-[var(--color-night)] pt-6 flex flex-col md:flex-row md:justify-between md:items-end gap-6">
+            <div className="w-full md:max-w-[320px]">
+              <label className="metro-label" style={{ color: "rgba(26,26,31,0.5)", display: "block", marginBottom: 8 }}>Campaign Name</label>
+              <input id="hunt-campaign" style={inputStyle} value={campaignName} onChange={e => setCampaignName(e.target.value)}
+                onFocus={e => (e.target.style.borderBottomColor = "var(--color-transit-red)")}
+                onBlur={e => (e.target.style.borderBottomColor = "var(--color-night)")} />
+            </div>
+            <div className="flex flex-wrap gap-3 items-center w-full md:w-auto justify-between md:justify-end">
+              <button
+                onClick={saveSearchPreset}
+                className="w-auto"
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  fontFamily: "var(--font-display)", fontWeight: 900, fontSize: "0.625rem",
+                  textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(26,26,31,0.45)",
+                  display: "flex", alignItems: "center", gap: 6, padding: "10px 0",
+                }}
+              >
+                <Save size={14} /> Save Preset
               </button>
-              <div className="flex gap-4">
-                <button onClick={() => setShowDeleteConfirm(true)} className="p-4 border-2 border-black hover:bg-black hover:text-white transition-colors">
-                  <Trash2 size={20} />
+              <div className="flex gap-3 items-center ml-auto md:ml-0">
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  style={{
+                    border: "3px solid var(--color-night)", background: "transparent",
+                    color: "var(--color-night)", padding: "10px 14px", cursor: "pointer",
+                    display: "flex", alignItems: "center", transition: "background 0.15s, color 0.15s",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "var(--color-night)"; (e.currentTarget as HTMLButtonElement).style.color = "var(--color-canvas)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; (e.currentTarget as HTMLButtonElement).style.color = "var(--color-night)"; }}
+                >
+                  <Trash2 size={16} />
                 </button>
                 <button
+                  id="hunt-execute"
                   onClick={executeHunt}
                   disabled={isLoading}
-                  className="px-12 py-4 bg-black text-white font-black uppercase text-sm border-2 border-black hover:bg-transparent hover:text-black transition-colors flex items-center gap-2"
+                  className="metro-btn-primary"
+                  style={{ display: "flex", alignItems: "center", gap: 8, opacity: isLoading ? 0.7 : 1 }}
                 >
-                  {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Zap size={18} />}
-                  {isLoading ? "Executing..." : "Initialize Hunt"}
+                  {isLoading ? <><Loader2 className="animate-spin" size={16} /> Executing...</> : <><Zap size={16} /> Initialize Hunt</>}
                 </button>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* RESULTS TABLE */}
-        <section className="border-4 border-black overflow-hidden bg-white mt-16 shadow-[8px_8px_0px_0px_rgba(200,200,200,1)]">
-          <div className="p-4 border-b-4 border-black flex justify-between items-center bg-black text-white">
-            <h3 className="font-black uppercase flex items-center gap-2">
-              Auditor Logs <span className="bg-white text-black px-2 py-1 text-xs font-mono">{leads.length}</span>
-            </h3>
-            <button onClick={exportToCSV} className="text-xs font-bold uppercase flex items-center gap-2 hover:underline">
-              <Download size={16} /> Export CSV
-            </button>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[1000px]">
-              <thead className="font-mono text-xs uppercase text-neutral-500 border-b-2 border-black font-bold">
-                <tr>
-                  <th className="p-4 cursor-pointer hover:text-black transition-colors" onClick={() => requestSort('Name')}>
-                    Target {sortConfig?.key === 'Name' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+      {/* Results table */}
+      <section style={{ border: "5px solid var(--color-night)", overflow: "hidden" }}>
+        {/* Table header */}
+        <div
+          className="field-night"
+          style={{ padding: "14px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+        >
+          <h3
+            className="metro-display"
+            style={{ fontSize: "1rem", color: "var(--color-canvas)", display: "flex", alignItems: "center", gap: 10 }}
+          >
+            Acquisition Logs
+            <span
+              style={{
+                background: "var(--color-transit-red)", color: "var(--color-canvas)",
+                fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "0.625rem",
+                padding: "2px 8px", letterSpacing: "0.1em",
+              }}
+            >
+              {leads.length}
+            </span>
+          </h3>
+          <button
+            onClick={exportToCSV}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "0.625rem",
+              textTransform: "uppercase", letterSpacing: "0.2em", color: "var(--color-canvas)",
+              display: "flex", alignItems: "center", gap: 6,
+            }}
+          >
+            <Download size={14} /> Export CSV
+          </button>
+        </div>
+
+        <div style={{ overflowX: "auto" }}>
+          <table className="metro-table" style={{ minWidth: 1000, background: "var(--color-canvas)" }}>
+            <thead>
+              <tr style={{ background: "rgba(26,26,31,0.04)" }}>
+                {[["Name", "Target"], ["Website", "Website"], ["Rating", "Rating"], ["Email", "Contact"]].map(([key, label]) => (
+                  <th
+                    key={key}
+                    onClick={() => requestSort(key)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      {label}
+                      <ArrowUpDown size={10} style={{ opacity: sortConfig?.key === key ? 1 : 0.3 }} />
+                      {sortConfig?.key === key ? (sortConfig.direction === "asc" ? " ↑" : " ↓") : ""}
+                    </span>
                   </th>
-                  <th className="p-4 cursor-pointer hover:text-black transition-colors" onClick={() => requestSort('Website')}>
-                    Website {sortConfig?.key === 'Website' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-                  </th>
-                  <th className="p-4 cursor-pointer hover:text-black transition-colors" onClick={() => requestSort('Rating')}>
-                    Rating {sortConfig?.key === 'Rating' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-                  </th>
-                  <th className="p-4 cursor-pointer hover:text-black transition-colors" onClick={() => requestSort('Email')}>
-                    Contact {sortConfig?.key === 'Email' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
-                  </th>
-                  <th className="p-4">Socials</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y-2 divide-neutral-200 font-mono text-sm">
-                {sortedLeads.map((l, i) => (
-                  <tr key={i} className="hover:bg-neutral-100 transition-colors">
-                    <td className="p-4">
-                      <div className="font-bold text-black uppercase">{l.Name}</div>
-                      <div className="text-xs text-neutral-600">{l.Address}</div>
-                      {l.Maps_Link && (
-                        <a href={l.Maps_Link} target="_blank" className="text-[10px] uppercase font-bold text-blue-600 hover:underline mt-1 block">
-                          ↗ Google Profile
-                        </a>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <a href={l.Website} target="_blank" className="hover:underline hover:text-green-600 max-w-[200px] truncate block font-bold">
-                        {l.Website}
-                      </a>
-                    </td>
-                    <td className="p-4 text-black font-bold">{l.Rating}</td>
-                    <td className="p-4">
-                      <div className="truncate max-w-[200px] font-bold">{l.Email}</div>
-                      <div className="text-xs text-neutral-600">{l.Phone}</div>
-                    </td>
-                    <td className="p-4 flex gap-2">
-                      {l.Instagram && l.Instagram !== "N/A" && <a href={l.Instagram} target="_blank" className="px-2 py-1 bg-black text-white text-[10px] font-bold uppercase hover:bg-neutral-800">IG</a>}
-                      {l.Facebook && l.Facebook !== "N/A" && <a href={l.Facebook} target="_blank" className="px-2 py-1 bg-[#1877F2] text-white text-[10px] font-bold uppercase hover:bg-blue-700">FB</a>}
-                      {l.Twitter && l.Twitter !== "N/A" && <a href={l.Twitter} target="_blank" className="px-2 py-1 bg-[#1DA1F2] text-white text-[10px] font-bold uppercase hover:bg-blue-400">X</a>}
-                      {l.TikTok && l.TikTok !== "N/A" && <a href={l.TikTok} target="_blank" className="px-2 py-1 bg-black text-white text-[10px] font-bold uppercase hover:bg-neutral-800">TK</a>}
-                      {(!l.Instagram || l.Instagram === "N/A") && (!l.Facebook || l.Facebook === "N/A") && (!l.Twitter || l.Twitter === "N/A") && (!l.TikTok || l.TikTok === "N/A") && <span className="text-xs text-neutral-400">N/A</span>}
-                    </td>
-                  </tr>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-      </main>
+                <th>Socials</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedLeads.map((l, i) => (
+                <tr key={i}>
+                  <td>
+                    <div
+                      className="metro-display"
+                      style={{ fontSize: "0.875rem", color: "var(--color-night)", marginBottom: 2 }}
+                    >
+                      {l.Name}
+                    </div>
+                    <div style={{ fontFamily: "var(--font-body)", fontSize: "0.75rem", color: "rgba(26,26,31,0.5)" }}>{l.Address}</div>
+                    {l.Maps_Link && (
+                      <a
+                        href={l.Maps_Link}
+                        target="_blank"
+                        className="metro-label"
+                        style={{ color: "var(--color-teal)", display: "block", marginTop: 4, textDecoration: "none" }}
+                      >
+                        ↗ Google Profile
+                      </a>
+                    )}
+                  </td>
+                  <td>
+                    <a
+                      href={l.Website}
+                      target="_blank"
+                      style={{
+                        fontFamily: "var(--font-display)", fontWeight: 600, fontSize: "0.8rem",
+                        color: "var(--color-night)", textDecoration: "none", maxWidth: 200,
+                        display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                        textTransform: "none",
+                      }}
+                    >
+                      {l.Website}
+                    </a>
+                  </td>
+                  <td>
+                    <span className="metro-display" style={{ fontSize: "0.875rem" }}>{l.Rating}</span>
+                  </td>
+                  <td>
+                    <div className="metro-display" style={{ fontSize: "0.8rem", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.Email}</div>
+                    <div style={{ fontFamily: "var(--font-body)", fontSize: "0.75rem", color: "rgba(26,26,31,0.5)" }}>{l.Phone}</div>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
+                      {l.Instagram && l.Instagram !== "N/A" && <a href={l.Instagram} target="_blank" className="field-night metro-label" style={{ padding: "3px 8px", textDecoration: "none", fontSize: "0.55rem" }}>IG</a>}
+                      {l.Facebook && l.Facebook !== "N/A" && <a href={l.Facebook} target="_blank" style={{ background: "#1877F2", color: "var(--color-canvas)", padding: "3px 8px", textDecoration: "none" }} className="metro-label" >FB</a>}
+                      {l.Twitter && l.Twitter !== "N/A" && <a href={l.Twitter} target="_blank" style={{ background: "#1DA1F2", color: "var(--color-canvas)", padding: "3px 8px", textDecoration: "none" }} className="metro-label">X</a>}
+                      {l.TikTok && l.TikTok !== "N/A" && <a href={l.TikTok} target="_blank" className="field-night metro-label" style={{ padding: "3px 8px", textDecoration: "none", fontSize: "0.55rem" }}>TK</a>}
+                      {(!l.Instagram || l.Instagram === "N/A") && (!l.Facebook || l.Facebook === "N/A") && (!l.Twitter || l.Twitter === "N/A") && (!l.TikTok || l.TikTok === "N/A") && (
+                        <span className="metro-label" style={{ color: "rgba(26,26,31,0.3)" }}>N/A</span>
+                      )}
+                      <button
+                        onClick={() => setLeadToDelete(l)}
+                        style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(26,26,31,0.25)", padding: "3px 4px", transition: "color 0.15s" }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "var(--color-transit-red)"; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(26,26,31,0.25)"; }}
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {sortedLeads.length === 0 && (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: "center", padding: "48px 16px", color: "rgba(26,26,31,0.3)" }}>
+                    <span className="metro-label">No targets acquired. Initialize a hunt.</span>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
-  );
-}
-
-function ToggleSwitch({ label, active, onClick }: any) {
-  return (
-    <button onClick={onClick} className="flex items-center gap-2 font-mono text-xs uppercase font-bold group">
-      <div className={`w-4 h-4 border-2 border-black flex items-center justify-center transition-colors ${active ? 'bg-black' : 'bg-transparent'}`}>
-        {active && <div className="w-2 h-2 bg-white" />}
-      </div>
-      {label}
-    </button>
   );
 }

@@ -4,16 +4,25 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Crosshair, Mailbox, History, Server, BookOpen, ChevronDown, Rocket, Key, ExternalLink, Cpu, Loader2
+  Crosshair, Mailbox, History, Server, BookOpen, ChevronDown, Rocket, Key, ExternalLink, Cpu, Loader2, Menu, X
 } from "lucide-react";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../../lib/firebase";
 
+const NAV_LINKS = [
+  { href: "/dashboard", label: "Target Hunter", Icon: Crosshair },
+  { href: "/pitch",     label: "Pitch Engine",  Icon: Mailbox },
+  { href: "/logs",      label: "Audit Logs",    Icon: History },
+];
+
+const ADMIN_EMAILS = ["er6798@gmail.com", "rongdesigns313@gmail.com"];
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [showDocs, setShowDocs] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [geminiOverride, setGeminiOverride] = useState("");
   const [openaiOverride, setOpenaiOverride] = useState("");
@@ -31,106 +40,578 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         router.push("/login");
       } else {
         setUser(usr);
-        try {
-          const userDoc = await getDoc(doc(db, "users", usr.uid));
-          if (userDoc.exists() && userDoc.data()?.subscriptionStatus === "active") {
-            setIsAuthLoading(false);
-          } else {
+        const isAdmin = ADMIN_EMAILS.includes(usr.email || "");
+        if (isAdmin) {
+          setIsAuthLoading(false);
+        } else {
+          try {
+            const userDoc = await getDoc(doc(db, "users", usr.uid));
+            if (userDoc.exists() && userDoc.data()?.subscriptionStatus === "active") {
+              setIsAuthLoading(false);
+            } else {
+              router.push("/paywall");
+            }
+          } catch {
             router.push("/paywall");
           }
-        } catch (err) {
-          console.error("Firestore lookup failed:", err);
-          router.push("/paywall");
         }
       }
     });
 
-    setGeminiOverride(localStorage.getItem('gemini_version') || "");
-    setOpenaiOverride(localStorage.getItem('openai_version') || "");
-    setHfOverride(localStorage.getItem('huggingface_version') || "");
-    setPlacesOverride(localStorage.getItem('places_version') || "");
+    setGeminiOverride(localStorage.getItem("gemini_version") || "");
+    setOpenaiOverride(localStorage.getItem("openai_version") || "");
+    setHfOverride(localStorage.getItem("huggingface_version") || "");
+    setPlacesOverride(localStorage.getItem("places_version") || "");
 
     return () => unsubscribe();
   }, [router]);
 
   const handleSaveModels = () => {
-    if (geminiOverride.trim()) localStorage.setItem('gemini_version', geminiOverride.trim());
-    else localStorage.removeItem('gemini_version');
-    if (openaiOverride.trim()) localStorage.setItem('openai_version', openaiOverride.trim());
-    else localStorage.removeItem('openai_version');
-    if (hfOverride.trim()) localStorage.setItem('huggingface_version', hfOverride.trim());
-    else localStorage.removeItem('huggingface_version');
-    if (placesOverride.trim()) localStorage.setItem('places_version', placesOverride.trim());
-    else localStorage.removeItem('places_version');
-    if (twilioOverride.trim()) localStorage.setItem('twilio_version', twilioOverride.trim());
-    else localStorage.removeItem('twilio_version');
-
+    if (geminiOverride.trim()) localStorage.setItem("gemini_version", geminiOverride.trim()); else localStorage.removeItem("gemini_version");
+    if (openaiOverride.trim()) localStorage.setItem("openai_version", openaiOverride.trim()); else localStorage.removeItem("openai_version");
+    if (hfOverride.trim()) localStorage.setItem("huggingface_version", hfOverride.trim()); else localStorage.removeItem("huggingface_version");
+    if (placesOverride.trim()) localStorage.setItem("places_version", placesOverride.trim()); else localStorage.removeItem("places_version");
+    if (twilioOverride.trim()) localStorage.setItem("twilio_version", twilioOverride.trim()); else localStorage.removeItem("twilio_version");
     setSaveStatus("SAVED!");
     setTimeout(() => setSaveStatus(""), 2000);
   };
 
+  const sidebar: React.CSSProperties = {
+    width: 260,
+    minWidth: 260,
+    height: "100vh",
+    flexDirection: "column",
+    borderRight: "5px solid var(--color-night)",
+    background: "var(--color-canvas)",
+    flexShrink: 0,
+    overflowY: "auto",
+    position: "sticky",
+    top: 0,
+  };
+
   return (
-    <div className="flex w-full h-full min-h-screen overflow-hidden bg-[#F4F4F0] selection:bg-black selection:text-white">
-      {/* SIDEBAR */}
-      <aside className="w-70 bg-white border-r-4 border-black flex flex-col h-screen shrink-0 transition-all z-20">
+    <div
+      style={{
+        display: "flex",
+        width: "100%",
+        minHeight: "100vh",
+        background: "var(--color-canvas)",
+        fontFamily: "var(--font-body)",
+      }}
+    >
+      {/* ── MOBILE HEADER ── */}
+      <header className="flex lg:hidden fixed top-0 left-0 right-0 h-[64px] bg-[var(--color-canvas)] border-b-[5px] border-[var(--color-night)] z-30 items-center justify-between px-4">
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 border-2 border-[var(--color-night)] bg-[var(--color-canvas)] hover:bg-[rgba(26,26,31,0.06)] active:bg-[var(--color-transit-red)] active:text-white transition-colors"
+          style={{ borderRadius: 0 }}
+        >
+          {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+        
+        <Link href="/" className="flex items-center gap-2 no-underline">
+          <div className="bg-[var(--color-night)] p-1.5 flex items-center justify-center">
+            <Server size={14} color="var(--color-canvas)" />
+          </div>
+          <div>
+            <div className="metro-display text-sm text-[var(--color-night)] leading-none font-bold uppercase tracking-wider">
+              SortingSource
+            </div>
+          </div>
+        </Link>
+        
+        <div className="w-[36px] h-[36px]" />
+      </header>
+
+      {/* ── MOBILE SLIDING DRAWER ── */}
+      <div className={`fixed inset-0 z-40 lg:hidden ${isMobileMenuOpen ? "pointer-events-auto" : "pointer-events-none"}`}>
+        {/* Backdrop Overlay */}
+        <div
+          className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${
+            isMobileMenuOpen ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+        
+        {/* Sidebar Panel */}
+        <aside
+          className={`absolute top-0 bottom-0 left-0 w-[280px] bg-[var(--color-canvas)] border-r-[5px] border-[var(--color-night)] flex flex-col transition-transform duration-300 ease-out metro-scroll ${
+            isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+          style={{ height: "100%" }}
+        >
+          {/* Logo */}
+          <div
+            className="field-teal"
+            style={{ padding: "20px 24px", borderBottom: "5px solid var(--color-night)", flexShrink: 0 }}
+          >
+            <div className="flex items-center justify-between">
+              <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }} onClick={() => setIsMobileMenuOpen(false)}>
+                <div
+                  className="field-night"
+                  style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                >
+                  <Server size={16} color="var(--color-canvas)" />
+                </div>
+                <div>
+                  <div
+                    className="metro-display"
+                    style={{ fontSize: "1rem", color: "var(--color-canvas)", lineHeight: 1 }}
+                  >
+                    SortingSource
+                  </div>
+                  <div
+                    className="metro-label"
+                    style={{ color: "var(--color-amber)", letterSpacing: "0.25em", marginTop: 2 }}
+                  >
+                    Enterprise v3.0
+                  </div>
+                </div>
+              </Link>
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-1 border-2 border-[var(--color-canvas)] text-[var(--color-canvas)] hover:bg-white/10"
+                style={{ borderRadius: 0 }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "16px 0", gap: 0, overflowY: "auto" }} className="metro-scroll">
+            {/* Navigation */}
+            <nav style={{ padding: "0 12px", marginBottom: 8 }}>
+              {NAV_LINKS.map(({ href, label, Icon }) => {
+                const active = pathname === href;
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "11px 12px",
+                      marginBottom: 4,
+                      textDecoration: "none",
+                      fontFamily: "var(--font-display)",
+                      fontWeight: active ? 900 : 600,
+                      fontSize: "0.75rem",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.2em",
+                      color: active ? "var(--color-canvas)" : "var(--color-night)",
+                      background: active ? "var(--color-transit-red)" : "transparent",
+                      borderLeft: active ? "4px solid var(--color-amber)" : "4px solid transparent",
+                      transition: "background 0.15s, color 0.15s",
+                    }}
+                  >
+                    <Icon size={15} />
+                    {label}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Divider */}
+            <div style={{ height: 3, background: "var(--color-night)", margin: "4px 0" }} />
+
+            {/* Directives */}
+            <div style={{ padding: "0 12px", marginTop: 8 }}>
+              <button
+                onClick={() => setShowDocs(!showDocs)}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "10px 12px",
+                  background: "transparent",
+                  border: "none",
+                  borderBottom: "2px solid var(--color-night)",
+                  cursor: "pointer",
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 900,
+                  fontSize: "0.625rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.3em",
+                  color: "var(--color-night)",
+                }}
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <BookOpen size={12} /> Directives
+                </span>
+                <ChevronDown size={12} style={{ transform: showDocs ? "rotate(180deg)" : "none", transition: "transform 0.3s" }} />
+              </button>
+
+              <div
+                style={{
+                  maxHeight: showDocs ? 400 : 0,
+                  overflow: "hidden",
+                  transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+              >
+                {/* Workflow */}
+                <div style={{ paddingTop: 16, paddingBottom: 8 }}>
+                  <div className="metro-label" style={{ color: "var(--color-transit-red)", marginBottom: 10, display: "flex", alignItems: "center", gap: 4 }}>
+                    <Rocket size={10} /> Workflow
+                  </div>
+                  <ol style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+                    {[
+                      ["1. Hunt:", "Use Target Hunter."],
+                      ["2. Extract:", "Pull emails & socials."],
+                      ["3. Pitch:", "Custom Pitch Writer."],
+                      ["4. Logs:", "Track replies."],
+                    ].map(([strong, text]) => (
+                      <li key={strong} style={{ fontFamily: "var(--font-body)", fontSize: "0.75rem", color: "rgba(26,26,31,0.65)" }}>
+                        <strong style={{ color: "var(--color-night)", fontFamily: "var(--font-display)", fontWeight: 700, textTransform: "uppercase", fontSize: "0.65rem", letterSpacing: "0.1em" }}>{strong}</strong> {text}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+
+                {/* Connections */}
+                <div style={{ paddingTop: 8, paddingBottom: 8 }}>
+                  <div className="metro-label" style={{ color: "var(--color-transit-red)", marginBottom: 10, display: "flex", alignItems: "center", gap: 4 }}>
+                    <Key size={10} /> Connections
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {["Places API Key", "Gemini API Key", "Gmail App Password", "OpenAI API Key", "Twilio Console", "Hugging Face Token"].map(link => (
+                      <a
+                        key={link}
+                        href="#"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "6px 8px",
+                          fontFamily: "var(--font-display)",
+                          fontWeight: 500,
+                          fontSize: "0.6rem",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.15em",
+                          color: "rgba(26,26,31,0.55)",
+                          textDecoration: "none",
+                          borderLeft: "2px solid transparent",
+                          transition: "border-color 0.15s, color 0.15s",
+                        }}
+                      >
+                        {link}
+                        <ExternalLink size={9} />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: 3, background: "var(--color-night)", margin: "4px 0" }} />
+
+            {/* Overrides */}
+            <div style={{ padding: "12px 24px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 12,
+                }}
+              >
+                <div className="metro-label" style={{ color: "var(--color-night)", display: "flex", alignItems: "center", gap: 4 }}>
+                  <Cpu size={10} /> Overrides
+                </div>
+                <button
+                  onClick={handleSaveModels}
+                  className="metro-label"
+                  style={{
+                    background: saveStatus ? "var(--color-teal)" : "var(--color-night)",
+                    color: "var(--color-canvas)",
+                    border: "none",
+                    padding: "4px 10px",
+                    cursor: "pointer",
+                    letterSpacing: "0.2em",
+                    transition: "background 0.2s",
+                  }}
+                >
+                  {saveStatus || "SAVE"}
+                </button>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {[
+                  { label: "Gemini", val: geminiOverride, set: setGeminiOverride, placeholder: "gemini-2.5-flash" },
+                  { label: "OpenAI", val: openaiOverride, set: setOpenaiOverride, placeholder: "gpt-4o-mini" },
+                  { label: "Hugging Face", val: hfOverride, set: setHfOverride, placeholder: "Qwen2.5-72B" },
+                ].map(item => (
+                  <div key={item.label}>
+                    <label className="metro-label" style={{ color: "rgba(26,26,31,0.4)", display: "block", marginBottom: 4 }}>{item.label}</label>
+                    <input
+                      value={item.val}
+                      onChange={e => item.set(e.target.value)}
+                      placeholder={`{Default} ${item.placeholder}`}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        borderBottom: "1px solid rgba(26,26,31,0.2)",
+                        padding: "4px 0",
+                        outline: "none",
+                        fontFamily: "var(--font-display)",
+                        fontWeight: 400,
+                        fontSize: "0.625rem",
+                        color: "var(--color-night)",
+                        width: "100%",
+                        letterSpacing: "0.05em",
+                      }}
+                      onFocus={e => (e.target.style.borderBottomColor = "var(--color-transit-red)")}
+                      onBlur={e => (e.target.style.borderBottomColor = "rgba(26,26,31,0.2)")}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Full Instructions link */}
+            <div style={{ padding: "0 12px", marginTop: 4 }}>
+              <Link
+                href="/instructions"
+                onClick={() => setIsMobileMenuOpen(false)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "10px 12px",
+                  textDecoration: "none",
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 600,
+                  fontSize: "0.625rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.2em",
+                  color: "rgba(26,26,31,0.5)",
+                  borderLeft: "4px solid transparent",
+                  transition: "color 0.15s, border-color 0.15s",
+                }}
+              >
+                <BookOpen size={12} /> Full Instructions
+              </Link>
+            </div>
+          </div>
+
+          {/* Profile footer */}
+          <div
+            style={{
+              borderTop: "5px solid var(--color-night)",
+              padding: "16px 24px",
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              flexShrink: 0,
+            }}
+          >
+            <div
+              className="field-night"
+              style={{
+                width: 32,
+                height: 32,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontFamily: "var(--font-display)",
+                fontWeight: 900,
+                fontSize: "0.75rem",
+                color: "var(--color-canvas)",
+                flexShrink: 0,
+              }}
+            >
+              {user?.email ? user.email.substring(0, 2).toUpperCase() : "OP"}
+            </div>
+            <div style={{ overflow: "hidden", flex: 1 }}>
+              <div
+                className="metro-label"
+                style={{ color: "var(--color-night)", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                title={user?.email || "Operator"}
+              >
+                {user?.email?.split("@")[0] || "Operator"}
+              </div>
+              <button
+                onClick={async () => { await signOut(auth); router.push("/login"); }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 500,
+                  fontSize: "0.55rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.2em",
+                  color: "rgba(26,26,31,0.4)",
+                  padding: 0,
+                  transition: "color 0.15s",
+                }}
+              >
+                Disconnect Node
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      {/* ── SIDEBAR ── */}
+      <aside style={sidebar} className="hidden lg:flex metro-scroll">
 
         {/* Logo */}
-        <div className="p-6 border-b-4 border-black bg-white">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-black text-white flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(200,200,200,1)] border-2 border-black">
-              <Server size={18} />
+        <div
+          className="field-teal"
+          style={{ padding: "20px 24px", borderBottom: "5px solid var(--color-night)", flexShrink: 0 }}
+        >
+          <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              className="field-night"
+              style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+            >
+              <Server size={16} color="var(--color-canvas)" />
             </div>
             <div>
-              <h1 className="font-serif font-black tracking-tight text-black leading-tight text-xl uppercase">SortingSource</h1>
-              <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest font-bold">Enterprise v3.0</p>
+              <div
+                className="metro-display"
+                style={{ fontSize: "1rem", color: "var(--color-canvas)", lineHeight: 1 }}
+              >
+                SortingSource
+              </div>
+              <div
+                className="metro-label"
+                style={{ color: "var(--color-amber)", letterSpacing: "0.25em", marginTop: 2 }}
+              >
+                Enterprise v3.0
+              </div>
             </div>
           </Link>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "16px 0", gap: 0, overflowY: "auto" }} className="metro-scroll">
+
           {/* Navigation */}
-          <nav className="space-y-2">
-            <Link href="/dashboard" className={`flex items-center gap-3 px-4 py-3 border-2 transition-transform hover:-translate-y-0.5 group font-mono uppercase tracking-widest text-xs font-bold ${pathname === '/dashboard' ? 'bg-black text-white border-black shadow-[4px_4px_0px_0px_rgba(200,200,200,1)]' : 'bg-transparent text-black border-transparent hover:border-black'}`}>
-              <Crosshair size={18} className="group-hover:scale-110 transition-transform" /> Target Hunter
-            </Link>
-            <Link href="/pitch" className={`flex items-center gap-3 px-4 py-3 border-2 transition-transform hover:-translate-y-0.5 group font-mono uppercase tracking-widest text-xs font-bold ${pathname === '/pitch' ? 'bg-black text-white border-black shadow-[4px_4px_0px_0px_rgba(200,200,200,1)]' : 'bg-transparent text-black border-transparent hover:border-black'}`}>
-              <Mailbox size={18} className="group-hover:scale-110 transition-transform" /> Pitch Engine
-            </Link>
-            <Link href="/logs" className={`flex items-center gap-3 px-4 py-3 border-2 transition-transform hover:-translate-y-0.5 group font-mono uppercase tracking-widest text-xs font-bold ${pathname === '/logs' ? 'bg-black text-white border-black shadow-[4px_4px_0px_0px_rgba(200,200,200,1)]' : 'bg-transparent text-black border-transparent hover:border-black'}`}>
-              <History size={18} className="group-hover:scale-110 transition-transform" /> Audit Logs
-            </Link>
+          <nav style={{ padding: "0 12px", marginBottom: 8 }}>
+            {NAV_LINKS.map(({ href, label, Icon }) => {
+              const active = pathname === href;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "11px 12px",
+                    marginBottom: 4,
+                    textDecoration: "none",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: active ? 900 : 600,
+                    fontSize: "0.75rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.2em",
+                    color: active ? "var(--color-canvas)" : "var(--color-night)",
+                    background: active ? "var(--color-transit-red)" : "transparent",
+                    borderLeft: active ? "4px solid var(--color-amber)" : "4px solid transparent",
+                    transition: "background 0.15s, color 0.15s",
+                  }}
+                  onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(26,26,31,0.06)"; } }}
+                  onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLAnchorElement).style.background = "transparent"; } }}
+                >
+                  <Icon size={15} />
+                  {label}
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* Docs */}
-          <div className="border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(200,200,200,1)]">
-            <button onClick={() => setShowDocs(!showDocs)} className="w-full p-4 flex items-center justify-between text-left hover:bg-neutral-100 transition-colors border-b-2 border-black">
-              <div className="flex items-center gap-2 text-black font-black text-xs tracking-widest uppercase">
-                <BookOpen size={14} className="text-black" /> Directives
-              </div>
-              <ChevronDown size={14} className={`text-black transition-transform duration-300 ${showDocs ? 'rotate-180' : ''}`} />
+          {/* Divider */}
+          <div style={{ height: 3, background: "var(--color-night)", margin: "4px 0" }} />
+
+          {/* Directives */}
+          <div style={{ padding: "0 12px", marginTop: 8 }}>
+            <button
+              onClick={() => setShowDocs(!showDocs)}
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "10px 12px",
+                background: "transparent",
+                border: "none",
+                borderBottom: "2px solid var(--color-night)",
+                cursor: "pointer",
+                fontFamily: "var(--font-display)",
+                fontWeight: 900,
+                fontSize: "0.625rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.3em",
+                color: "var(--color-night)",
+              }}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <BookOpen size={12} /> Directives
+              </span>
+              <ChevronDown size={12} style={{ transform: showDocs ? "rotate(180deg)" : "none", transition: "transform 0.3s" }} />
             </button>
 
-            <div className={`transition-all duration-500 ease-in-out ${showDocs ? 'max-h-250 opacity-100 p-4' : 'max-h-0 opacity-0 overflow-hidden'}`}>
-              <div className="mb-6">
-                <h3 className="flex items-center gap-2 text-[10px] font-black text-black mb-3 uppercase tracking-widest border-b-2 border-black pb-1">
-                  <Rocket size={12} className="text-black" /> Workflow
-                </h3>
-                <ol className="space-y-3 text-[11px] text-neutral-600 leading-relaxed font-mono">
-                  <li><strong className="text-black">1. Hunt:</strong> Use Target Hunter.</li>
-                  <li><strong className="text-black">2. Extract:</strong> Use to extract data.</li>
-                  <li><strong className="text-black">3. Pitch:</strong> Custom Pitch Writer.</li>
-                  <li><strong className="text-black">4. Logs:</strong> Track replies.</li>
+            <div
+              style={{
+                maxHeight: showDocs ? 400 : 0,
+                overflow: "hidden",
+                transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+              }}
+            >
+              {/* Workflow */}
+              <div style={{ paddingTop: 16, paddingBottom: 8 }}>
+                <div className="metro-label" style={{ color: "var(--color-transit-red)", marginBottom: 10, display: "flex", alignItems: "center", gap: 4 }}>
+                  <Rocket size={10} /> Workflow
+                </div>
+                <ol style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+                  {[
+                    ["1. Hunt:", "Use Target Hunter."],
+                    ["2. Extract:", "Pull emails & socials."],
+                    ["3. Pitch:", "Custom Pitch Writer."],
+                    ["4. Logs:", "Track replies."],
+                  ].map(([strong, text]) => (
+                    <li key={strong} style={{ fontFamily: "var(--font-body)", fontSize: "0.75rem", color: "rgba(26,26,31,0.65)" }}>
+                      <strong style={{ color: "var(--color-night)", fontFamily: "var(--font-display)", fontWeight: 700, textTransform: "uppercase", fontSize: "0.65rem", letterSpacing: "0.1em" }}>{strong}</strong> {text}
+                    </li>
+                  ))}
                 </ol>
               </div>
-              <div>
-                <h3 className="flex items-center gap-2 text-[10px] font-black text-black mb-3 uppercase tracking-widest border-b-2 border-black pb-1">
-                  <Key size={12} className="text-black" /> Connections
-                </h3>
-                <div className="space-y-2">
-                  {['Places API Key', 'Gemini API Key', 'Gmail App Password', 'OpenAI API Key', 'Twilio Console', 'Hugging Face Token'].map(link => (
-                    <a key={link} href="#" className="flex items-center justify-between group p-2 bg-neutral-100 border-2 border-transparent hover:border-black transition-all text-left font-mono">
-                      <span className="text-[9px] text-neutral-600 group-hover:text-black uppercase tracking-wider font-bold">{link}</span>
-                      <ExternalLink size={10} className="text-neutral-400 group-hover:text-black" />
+
+              {/* Connections */}
+              <div style={{ paddingTop: 8, paddingBottom: 8 }}>
+                <div className="metro-label" style={{ color: "var(--color-transit-red)", marginBottom: 10, display: "flex", alignItems: "center", gap: 4 }}>
+                  <Key size={10} /> Connections
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {["Places API Key", "Gemini API Key", "Gmail App Password", "OpenAI API Key", "Twilio Console", "Hugging Face Token"].map(link => (
+                    <a
+                      key={link}
+                      href="#"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "6px 8px",
+                        fontFamily: "var(--font-display)",
+                        fontWeight: 500,
+                        fontSize: "0.6rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.15em",
+                        color: "rgba(26,26,31,0.55)",
+                        textDecoration: "none",
+                        borderLeft: "2px solid transparent",
+                        transition: "border-color 0.15s, color 0.15s",
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.borderLeftColor = "var(--color-amber)"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--color-night)"; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.borderLeftColor = "transparent"; (e.currentTarget as HTMLAnchorElement).style.color = "rgba(26,26,31,0.55)"; }}
+                    >
+                      {link}
+                      <ExternalLink size={9} />
                     </a>
                   ))}
                 </div>
@@ -138,66 +619,173 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
 
+          {/* Divider */}
+          <div style={{ height: 3, background: "var(--color-night)", margin: "4px 0" }} />
+
           {/* Overrides */}
-          <div className="p-4 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(200,200,200,1)]">
-            <div className="flex items-center justify-between mb-4 border-b-2 border-black pb-2">
-              <div className="flex items-center gap-2">
-                <Cpu size={14} className="text-black" />
-                <h3 className="text-[10px] font-black text-black uppercase tracking-widest">Overrides</h3>
+          <div style={{ padding: "12px 24px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 12,
+              }}
+            >
+              <div className="metro-label" style={{ color: "var(--color-night)", display: "flex", alignItems: "center", gap: 4 }}>
+                <Cpu size={10} /> Overrides
               </div>
-              <button onClick={handleSaveModels} className="text-[9px] font-bold uppercase tracking-widest bg-black text-white hover:bg-transparent hover:text-black border-2 border-black px-2 py-1 transition-all">
+              <button
+                onClick={handleSaveModels}
+                className="metro-label"
+                style={{
+                  background: saveStatus ? "var(--color-teal)" : "var(--color-night)",
+                  color: "var(--color-canvas)",
+                  border: "none",
+                  padding: "4px 10px",
+                  cursor: "pointer",
+                  letterSpacing: "0.2em",
+                  transition: "background 0.2s",
+                }}
+              >
                 {saveStatus || "SAVE"}
               </button>
             </div>
 
-            <div className="space-y-3">
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {[
-                { label: 'Gemini', val: geminiOverride, set: setGeminiOverride, placeholder: 'gemini-2.5-flash' },
-                { label: 'OpenAI', val: openaiOverride, set: setOpenaiOverride, placeholder: 'gpt-4o-mini' },
-                { label: 'Hugging Face', val: hfOverride, set: setHfOverride, placeholder: 'Qwen2.5-72B' }
+                { label: "Gemini", val: geminiOverride, set: setGeminiOverride, placeholder: "gemini-2.5-flash" },
+                { label: "OpenAI", val: openaiOverride, set: setOpenaiOverride, placeholder: "gpt-4o-mini" },
+                { label: "Hugging Face", val: hfOverride, set: setHfOverride, placeholder: "Qwen2.5-72B" },
               ].map(item => (
                 <div key={item.label}>
-                  <label className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest block mb-1">{item.label}</label>
-                  <input value={item.val} onChange={(e) => item.set(e.target.value)} placeholder={`{Default} ${item.placeholder}`} className="w-full bg-transparent border-b-2 border-neutral-300 p-1 text-[10px] font-mono outline-none focus:border-black text-black placeholder:text-neutral-400" />
+                  <label className="metro-label" style={{ color: "rgba(26,26,31,0.4)", display: "block", marginBottom: 4 }}>{item.label}</label>
+                  <input
+                    value={item.val}
+                    onChange={e => item.set(e.target.value)}
+                    placeholder={`{Default} ${item.placeholder}`}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      borderBottom: "1px solid rgba(26,26,31,0.2)",
+                      padding: "4px 0",
+                      outline: "none",
+                      fontFamily: "var(--font-display)",
+                      fontWeight: 400,
+                      fontSize: "0.625rem",
+                      color: "var(--color-night)",
+                      width: "100%",
+                      letterSpacing: "0.05em",
+                    }}
+                    onFocus={e => (e.target.style.borderBottomColor = "var(--color-transit-red)")}
+                    onBlur={e => (e.target.style.borderBottomColor = "rgba(26,26,31,0.2)")}
+                  />
                 </div>
               ))}
             </div>
           </div>
 
-          <Link href="/instructions" className="flex items-center gap-3 px-4 py-3 mt-4 border-2 transition-transform hover:-translate-y-0.5 group font-mono uppercase tracking-widest text-xs font-bold bg-transparent text-black border-transparent hover:border-black">
-            <BookOpen size={18} className="group-hover:scale-110 transition-transform" /> Full Instructions
-          </Link>
+          {/* Full Instructions link */}
+          <div style={{ padding: "0 12px", marginTop: 4 }}>
+            <Link
+              href="/instructions"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 12px",
+                textDecoration: "none",
+                fontFamily: "var(--font-display)",
+                fontWeight: 600,
+                fontSize: "0.625rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.2em",
+                color: "rgba(26,26,31,0.5)",
+                borderLeft: "4px solid transparent",
+                transition: "color 0.15s, border-color 0.15s",
+              }}
+              onMouseEnter={e => { const a = e.currentTarget as HTMLAnchorElement; a.style.color = "var(--color-night)"; a.style.borderLeftColor = "var(--color-amber)"; }}
+              onMouseLeave={e => { const a = e.currentTarget as HTMLAnchorElement; a.style.color = "rgba(26,26,31,0.5)"; a.style.borderLeftColor = "transparent"; }}
+            >
+              <BookOpen size={12} /> Full Instructions
+            </Link>
+          </div>
         </div>
 
-        {/* Profile */}
-        <div className="p-4 border-t-4 border-black bg-white">
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-8 h-8 bg-neutral-200 border-2 border-black flex items-center justify-center font-bold text-xs uppercase">
-              {user?.email ? user.email.substring(0, 2) : "OP"}
+        {/* Profile footer */}
+        <div
+          style={{
+            borderTop: "5px solid var(--color-night)",
+            padding: "16px 24px",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            flexShrink: 0,
+          }}
+        >
+          <div
+            className="field-night"
+            style={{
+              width: 32,
+              height: 32,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: "var(--font-display)",
+              fontWeight: 900,
+              fontSize: "0.75rem",
+              color: "var(--color-canvas)",
+              flexShrink: 0,
+            }}
+          >
+            {user?.email ? user.email.substring(0, 2).toUpperCase() : "OP"}
+          </div>
+          <div style={{ overflow: "hidden", flex: 1 }}>
+            <div
+              className="metro-label"
+              style={{ color: "var(--color-night)", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+              title={user?.email || "Operator"}
+            >
+              {user?.email?.split("@")[0] || "Operator"}
             </div>
-            <div className="overflow-hidden">
-              <p className="text-xs font-black text-black uppercase tracking-widest truncate" title={user?.email || "SaaS Member"}>
-                {user?.email?.split('@')[0] || "Operator"}
-              </p>
-              <button 
-                onClick={async () => {
-                  await signOut(auth);
-                  router.push("/login");
-                }}
-                className="text-[9px] font-mono font-bold text-neutral-500 hover:text-black uppercase tracking-wider block mt-1 hover:underline"
-              >
-                Disconnect Node
-              </button>
-            </div>
+            <button
+              onClick={async () => { await signOut(auth); router.push("/login"); }}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontFamily: "var(--font-display)",
+                fontWeight: 500,
+                fontSize: "0.55rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.2em",
+                color: "rgba(26,26,31,0.4)",
+                padding: 0,
+                transition: "color 0.15s",
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "var(--color-transit-red)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(26,26,31,0.4)"; }}
+            >
+              Disconnect Node
+            </button>
           </div>
         </div>
       </aside>
 
-      <div className="flex-1 h-screen overflow-auto bg-[#F4F4F0] p-4 lg:p-8">
+      {/* ── CONTENT AREA ── */}
+      <div
+        style={{
+          flex: 1,
+          height: "100vh",
+          overflowY: "auto",
+          background: "var(--color-canvas)",
+        }}
+        className="metro-scroll pt-[64px] lg:pt-0"
+      >
         {isAuthLoading ? (
-          <div className="h-full w-full flex flex-col items-center justify-center">
-            <Loader2 className="animate-spin text-black mb-4" size={32} />
-            <p className="text-neutral-500 font-mono text-xs uppercase tracking-widest">Syncing Operator Node...</p>
+          <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16 }}>
+            <Loader2 className="animate-spin" size={28} color="var(--color-transit-red)" />
+            <p className="metro-label" style={{ color: "rgba(26,26,31,0.4)" }}>Syncing Operator Node...</p>
           </div>
         ) : (
           children

@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Check, Crosshair, Terminal, Search, ShieldAlert, Cpu, Send, Server } from "lucide-react";
+import { Check, Crosshair, Terminal, Search, ShieldAlert, Cpu, Send, Server, Zap } from "lucide-react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
@@ -12,37 +11,118 @@ import { useRouter } from "next/navigation";
 const steps = [
   {
     id: "hunter",
-    title: "1. The Hunter",
+    num: "01",
+    title: "The Hunter",
     subtitle: "Target Acquisition",
-    description: "Input your niche and city parameters. Our proprietary Google Maps API integration strips the web of dozens of relevant local businesses in seconds.",
-    icon: <Search className="w-6 h-6 text-black" />,
+    description: "Input your niche and city parameters. Proprietary Google Maps API integration strips the web of dozens of relevant local businesses in seconds.",
     terminalCode: "> PROTOCOL: HUNTER\n> ACQUIRING TARGETS...\n> 47 ENTITIES FOUND."
   },
   {
-    id: "auditor",
-    title: "2. The Extractor",
+    id: "extractor",
+    num: "02",
+    title: "The Extractor",
     subtitle: "Deep Data Mining",
-    description: "The Extractor runs asynchronous protocols on your targets' websites to pull direct emails and social handles (IG, FB, X, TikTok) that are usually hidden from public view.",
-    icon: <ShieldAlert className="w-6 h-6 text-black" />,
+    description: "Asynchronous protocols run on target websites to pull direct emails and social handles — IG, FB, X, TikTok — usually hidden from public view.",
     terminalCode: "> INITIATING EXTRACTION...\n> TARGET: detroitplumbing.com\n> EMAILS FOUND: 2\n> SOCIAL LINKS: INSTAGRAM, FACEBOOK"
   },
   {
     id: "pitcher",
-    title: "3. The Pitcher",
+    num: "03",
+    title: "The Pitcher",
     subtitle: "Custom Pitch Writer",
-    description: "Stop blasting generic templates. SortingSource injects technical audit parameters directly into your drafts, generating high-conviction emails that highlight specific website vulnerabilities to capture attention immediately.",
-    icon: <Cpu className="w-6 h-6 text-black" />,
+    description: "Stop blasting generic templates. Technical audit parameters inject directly into your drafts — generating high-conviction emails that highlight specific website vulnerabilities.",
     terminalCode: "> INITIALIZING DRAFT ENGINE...\n> INJECTING AUDIT PARAMETERS...\n> WRITING PITCH PAYLOAD...\n> DRAFT GENERATED."
   },
   {
     id: "dispatcher",
-    title: "4. The Dispatcher",
+    num: "04",
+    title: "The Dispatcher",
     subtitle: "Automated Inbox Delivery",
-    description: "Execute your campaign directly from the dashboard. Connect via SMTP/IMAP to bulk-send. Our 'Anti-Spam Jitter' protocol injects randomized delays to protect your domain reputation.",
-    icon: <Send className="w-6 h-6 text-black" />,
+    description: "Execute campaigns directly from the dashboard via SMTP/IMAP. Anti-Spam Jitter protocol injects randomized delays to protect your domain reputation.",
     terminalCode: "> CONNECTING SMTP GATES...\n> ENGAGING ANTI-SPAM JITTER...\n> DEPLOYING MESSAGE 1/47...\n> DELIVERED."
   }
 ];
+
+// --- SVG: CONSTRUCTIVIST DOWNTOWN SKYLINE ---
+function DowntownSkylineSVG() {
+  return (
+    <svg
+      viewBox="0 0 180 380"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ width: "100%", maxWidth: 180, height: "auto" }}
+      aria-hidden="true"
+    >
+      {/* Background/Backdrop building elements (Teal) */}
+      <rect x="5" y="140" width="60" height="230" fill="#2E7E82" />
+      <rect x="115" y="90" width="55" height="280" fill="#2E7E82" opacity="0.65" />
+
+      {/* Amber speed lines behind foreground buildings */}
+      <rect x="75" y="0" width="6" height="380" fill="#F0A500" />
+      <line x1="10" y1="330" x2="170" y2="170" stroke="#F0A500" strokeWidth="4" />
+
+      {/* Foreground Building 1 - Tall Night */}
+      <rect x="40" y="60" width="55" height="310" fill="#1A1A1F" />
+      {/* Window grid for Building 1 */}
+      <g fill="#EDE8DC" opacity="0.85">
+        <rect x="48" y="80" width="8" height="12" rx="1" />
+        <rect x="60" y="80" width="8" height="12" rx="1" />
+        <rect x="72" y="80" width="8" height="12" rx="1" />
+        <rect x="84" y="80" width="8" height="12" rx="1" />
+
+        <rect x="48" y="110" width="8" height="12" rx="1" />
+        <rect x="60" y="110" width="8" height="12" rx="1" />
+        <rect x="72" y="110" width="8" height="12" rx="1" />
+        <rect x="84" y="110" width="8" height="12" rx="1" />
+
+        <rect x="48" y="140" width="8" height="12" rx="1" />
+        <rect x="60" y="140" width="8" height="12" rx="1" />
+        <rect x="72" y="140" width="8" height="12" rx="1" />
+        <rect x="84" y="140" width="8" height="12" rx="1" />
+
+        <rect x="48" y="170" width="8" height="12" rx="1" />
+        <rect x="60" y="170" width="8" height="12" rx="1" />
+        <rect x="72" y="170" width="8" height="12" rx="1" />
+        <rect x="84" y="170" width="8" height="12" rx="1" />
+
+        <rect x="48" y="200" width="8" height="12" rx="1" />
+        <rect x="60" y="200" width="8" height="12" rx="1" />
+        <rect x="72" y="200" width="8" height="12" rx="1" />
+        <rect x="84" y="200" width="8" height="12" rx="1" />
+
+        <rect x="48" y="230" width="8" height="12" rx="1" />
+        <rect x="60" y="230" width="8" height="12" rx="1" />
+        <rect x="72" y="230" width="8" height="12" rx="1" />
+        <rect x="84" y="230" width="8" height="12" rx="1" />
+      </g>
+
+      {/* Foreground Building 2 - Shorter Red */}
+      <rect x="90" y="150" width="65" height="220" fill="#D42B1E" />
+      <g fill="#EDE8DC" opacity="0.85">
+        <rect x="98" y="170" width="10" height="16" rx="1" />
+        <rect x="113" y="170" width="10" height="16" rx="1" />
+        <rect x="128" y="170" width="10" height="16" rx="1" />
+        <rect x="143" y="170" width="10" height="16" rx="1" />
+
+        <rect x="98" y="200" width="10" height="16" rx="1" />
+        <rect x="113" y="200" width="10" height="16" rx="1" />
+        <rect x="128" y="200" width="10" height="16" rx="1" />
+        <rect x="143" y="200" width="10" height="16" rx="1" />
+
+        <rect x="98" y="230" width="10" height="16" rx="1" />
+        <rect x="113" y="230" width="10" height="16" rx="1" />
+        <rect x="128" y="230" width="10" height="16" rx="1" />
+        <rect x="143" y="230" width="10" height="16" rx="1" />
+      </g>
+
+      {/* Tallest background needle (Night) */}
+      <rect x="100" y="40" width="12" height="110" fill="#1A1A1F" />
+      
+      {/* Diagonal cuts / speed lines on buildings */}
+      <line x1="85" y1="60" x2="40" y2="105" stroke="#F0A500" strokeWidth="4" />
+    </svg>
+  );
+}
 
 export default function SortingSourceLanding() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -54,15 +134,21 @@ export default function SortingSourceLanding() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setCurrentUser(user);
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) {
-            setUserStatus(userDoc.data()?.subscriptionStatus || "inactive");
-          } else {
+        const isAdmin = ["er6798@gmail.com", "rongdesigns313@gmail.com"].includes(user.email || "");
+        if (isAdmin) {
+          setUserStatus("active");
+        } else {
+          try {
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) {
+              setUserStatus(userDoc.data()?.subscriptionStatus || "inactive");
+            } else {
+              setUserStatus("inactive");
+            }
+          } catch (e) {
+            console.error(e);
             setUserStatus("inactive");
           }
-        } catch (e) {
-          console.error(e);
         }
       } else {
         setCurrentUser(null);
@@ -73,85 +159,95 @@ export default function SortingSourceLanding() {
     return () => unsubscribe();
   }, []);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-  };
-
   const handleCheckout = async (priceId: string) => {
-    if (!currentUser) {
-      router.push("/signup");
-      return;
-    }
-
-    if (userStatus === "active") {
-      router.push("/dashboard");
-      return;
-    }
-
+    if (!currentUser) { router.push("/signup"); return; }
+    if (userStatus === "active") { router.push("/dashboard"); return; }
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          priceId,
-          userId: currentUser.uid,
-          userEmail: currentUser.email
-        }),
+        body: JSON.stringify({ priceId, userId: currentUser.uid, userEmail: currentUser.email }),
       });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        console.error("Checkout Error:", data.error);
-      }
+      if (data.url) window.location.href = data.url;
     } catch (err) {
       console.error(err);
     }
   };
 
   const scrollTo = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F4F0] text-black font-sans selection:bg-black selection:text-white pb-20 relative">
+    <div
+      className="min-h-screen"
+      style={{ background: "var(--color-canvas)", color: "var(--color-night)", fontFamily: "var(--font-body)" }}
+    >
 
-      {/* NAVIGATION BAR */}
-      <nav className="border-b-8 border-black bg-white py-4 px-6 md:px-12 flex justify-between items-center relative z-20">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-black text-white flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_0px_rgba(200,200,200,1)]">
-            <Server size={18} />
+      {/* ===== NAVIGATION ===== */}
+      <nav
+        className="px-4 lg:px-12"
+        style={{
+          borderBottom: "5px solid var(--color-night)",
+          background: "var(--color-canvas)",
+          height: 64,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          position: "sticky",
+          top: 0,
+          zIndex: 50,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            style={{
+              width: 32, height: 32,
+              background: "var(--color-transit-red)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <Server size={16} color="var(--color-canvas)" />
           </div>
-          <span className="font-serif font-black tracking-tight text-xl uppercase leading-none">SortingSource</span>
+          <span
+            style={{
+              fontFamily: "var(--font-display)",
+              fontWeight: 900,
+              fontSize: "1.25rem",
+              textTransform: "uppercase",
+              letterSpacing: "-0.02em",
+              color: "var(--color-night)",
+            }}
+          >
+            SortingSource
+          </span>
         </div>
-        <div className="flex gap-4 font-mono text-xs">
+
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {!authChecked ? (
-            <div className="animate-pulse bg-neutral-200 h-8 w-20 border-2 border-black" />
+            <div style={{ width: 120, height: 36, background: "rgba(26,26,31,0.1)" }} />
           ) : currentUser ? (
-            <button 
-              onClick={() => {
-                if (userStatus === "active") router.push("/dashboard");
-                else router.push("/paywall");
-              }}
-              className="px-4 py-2 border-2 border-black bg-black text-white hover:bg-white hover:text-black font-bold uppercase tracking-wider transition-all"
+            <button
+              onClick={() => { if (userStatus === "active") router.push("/dashboard"); else router.push("/paywall"); }}
+              className="metro-btn-primary"
+              style={{ padding: "10px 24px", fontSize: "0.75rem" }}
             >
               Go to Dashboard
             </button>
           ) : (
             <>
-              <button 
+              <button
                 onClick={() => router.push("/login")}
-                className="px-4 py-2 border-2 border-transparent hover:border-black font-bold uppercase tracking-wider transition-all"
+                className="metro-btn-ghost"
+                style={{ padding: "10px 24px", fontSize: "0.75rem" }}
               >
                 Log In
               </button>
-              <button 
+              <button
                 onClick={() => router.push("/signup")}
-                className="px-4 py-2 border-2 border-black bg-black text-white hover:bg-white hover:text-black font-bold uppercase tracking-wider transition-all shadow-[2px_2px_0px_0px_rgba(200,200,200,1)] hover:shadow-none"
+                className="metro-btn-primary"
+                style={{ padding: "10px 24px", fontSize: "0.75rem" }}
               >
                 Sign Up
               </button>
@@ -160,59 +256,118 @@ export default function SortingSourceLanding() {
         </div>
       </nav>
 
-      {/* 1. HERO SECTION (Asymmetrical & Brutalist) */}
-      <header className="relative z-10 flex flex-col md:flex-row min-h-[85vh] border-b-8 border-black">
-        {/* Left 60% */}
-        <div className="w-full md:w-[60%] flex flex-col justify-center px-8 md:px-16 py-20 border-b-8 md:border-b-0 md:border-r-8 border-black bg-white">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-            className="inline-flex items-center gap-2 px-3 py-1 mb-8 border-2 border-black bg-yellow-400 w-max shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+      {/* ===== HERO — Teal left / Red right, curve divider ===== */}
+      <header
+        id="hero"
+        className="flex flex-col lg:flex-row"
+        style={{
+          minHeight: "90vh",
+          borderBottom: "5px solid var(--color-night)",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Left teal field — 58% */}
+        <div
+          className="field-teal w-full lg:w-[58%]"
+          style={{
+            padding: "clamp(32px, 5vw, 96px)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            position: "relative",
+            zIndex: 2,
+          }}
+        >
+          {/* System label */}
+          <div
+            className="metro-label"
+            style={{
+              color: "var(--color-amber)",
+              marginBottom: 32,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
           >
-            <Terminal size={14} className="text-black font-bold" />
-            <span className="text-xs tracking-widest text-black uppercase font-mono font-bold">
-              Infrastructure Online // v3.0
-            </span>
-          </motion.div>
+            <Terminal size={12} />
+            Infrastructure Online // v3.0
+          </div>
 
-          <motion.h1
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-            className="max-w-4xl mb-8 text-5xl md:text-7xl font-serif leading-[1.1] tracking-tight text-black"
+          {/* Mega display headline */}
+          <h1
+            className="metro-display"
+            style={{
+              fontSize: "clamp(3.5rem, 9vw, 8.5rem)",
+              color: "var(--color-canvas)",
+              marginBottom: 32,
+              maxWidth: "100%",
+            }}
           >
-            Industrial-Grade <br />
-            <span className="bg-black text-white px-2 italic">Outbound.</span>
-          </motion.h1>
+            Industrial<br />
+            Grade<br />
+            <span style={{ color: "var(--color-amber)", fontStyle: "italic" }}>Outbound.</span>
+          </h1>
 
-          <motion.p
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-            className="max-w-xl mb-12 text-lg font-mono leading-relaxed text-neutral-800"
+          <p
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: "1.1rem",
+              lineHeight: 1.6,
+              color: "rgba(237,232,220,0.85)",
+              maxWidth: 480,
+              marginBottom: 48,
+            }}
           >
-            Build a direct, self-owned outbound pipeline. No credit markup, no middleman databases, no generic AI templates. Just raw data extraction and cold outreach that actually lands in the inbox.
-          </motion.p>
+            Build a direct, self-owned outbound pipeline. No credit markup, no middleman databases. Raw data extraction and cold outreach that actually lands in the inbox.
+          </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="flex flex-col gap-4 sm:flex-row"
-          >
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             {!authChecked ? (
-              <div className="animate-pulse bg-neutral-200 h-14 w-48 border-4 border-black" />
+              <div style={{ width: 180, height: 52, background: "rgba(237,232,220,0.2)" }} />
             ) : currentUser ? (
               <>
                 <button
-                  onClick={() => {
-                    if (userStatus === "active") {
-                      router.push("/dashboard");
-                    } else {
-                      router.push("/paywall");
-                    }
+                  onClick={() => { if (userStatus === "active") router.push("/dashboard"); else router.push("/paywall"); }}
+                  style={{
+                    background: "var(--color-canvas)",
+                    color: "var(--color-night)",
+                    border: "3px solid var(--color-canvas)",
+                    padding: "14px 32px",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 900,
+                    fontSize: "0.75rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.15em",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    transition: "background 0.2s, color 0.2s",
                   }}
-                  className="px-8 py-4 font-bold text-white transition-transform transform hover:-translate-y-1 bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(200,200,200,1)] flex items-center justify-center gap-3 font-mono uppercase tracking-widest text-sm"
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "var(--color-amber)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "var(--color-canvas)"; (e.currentTarget as HTMLButtonElement).style.color = "var(--color-night)"; }}
                 >
-                  <Crosshair size={18} />
+                  <Crosshair size={16} />
                   {userStatus === "active" ? "Go to Dashboard" : "Resolve Paywall"}
                 </button>
                 <button
-                  onClick={() => scrollTo('engine')}
-                  className="px-8 py-4 font-bold transition-transform transform hover:-translate-y-1 border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-black font-mono uppercase tracking-widest text-sm"
+                  onClick={() => scrollTo("engine")}
+                  style={{
+                    background: "transparent",
+                    color: "var(--color-canvas)",
+                    border: "3px solid var(--color-canvas)",
+                    padding: "14px 32px",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 900,
+                    fontSize: "0.75rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.15em",
+                    cursor: "pointer",
+                    transition: "background 0.2s",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(237,232,220,0.15)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
                 >
                   Examine The Engine
                 </button>
@@ -221,153 +376,475 @@ export default function SortingSourceLanding() {
               <>
                 <button
                   onClick={() => router.push("/signup")}
-                  className="px-8 py-4 font-bold text-white transition-transform transform hover:-translate-y-1 bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(200,200,200,1)] flex items-center justify-center gap-3 font-mono uppercase tracking-widest text-sm"
+                  style={{
+                    background: "var(--color-canvas)",
+                    color: "var(--color-night)",
+                    border: "3px solid var(--color-canvas)",
+                    padding: "14px 32px",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 900,
+                    fontSize: "0.75rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.15em",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    transition: "background 0.2s, color 0.2s",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "var(--color-amber)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "var(--color-canvas)"; (e.currentTarget as HTMLButtonElement).style.color = "var(--color-night)"; }}
                 >
-                  <Crosshair size={18} />
+                  <Crosshair size={16} />
                   Sign Up & Start Outbound
                 </button>
                 <button
                   onClick={() => router.push("/login")}
-                  className="px-8 py-4 font-bold transition-transform transform hover:-translate-y-1 border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-black font-mono uppercase tracking-widest text-sm"
+                  style={{
+                    background: "transparent",
+                    color: "var(--color-canvas)",
+                    border: "3px solid var(--color-canvas)",
+                    padding: "14px 32px",
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 900,
+                    fontSize: "0.75rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.15em",
+                    cursor: "pointer",
+                    transition: "background 0.2s",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(237,232,220,0.15)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
                 >
                   Log In
                 </button>
               </>
             )}
-          </motion.div>
+          </div>
         </div>
 
-        {/* Right 40% - Graphic/Texture */}
-        <div className="w-full md:w-[40%] bg-neutral-200 flex flex-col relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-black to-transparent" style={{ backgroundSize: '20px 20px', backgroundImage: 'radial-gradient(circle, #000 2px, transparent 2px)' }}></div>
-          <div className="flex-1 p-10 flex flex-col justify-end">
-            <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] font-mono text-sm leading-loose">
-              <span className="text-neutral-400">01</span> SYS.INIT(true);<br />
-              <span className="text-neutral-400">02</span> SCRAPING_PROTOCOLS = ENGAGED;<br />
-              <span className="text-neutral-400">03</span> <span className="bg-yellow-400 text-black px-1 font-bold">READY TO FIRE.</span>
-            </div>
+        {/* Sweeping curve SVG divider */}
+        <svg
+          className="hidden lg:block"
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: 0,
+            height: "100%",
+            width: 120,
+            transform: "translateX(-50%)",
+            zIndex: 3,
+            pointerEvents: "none",
+          }}
+          preserveAspectRatio="none"
+          viewBox="0 0 120 900"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M60 0 C60 0 80 225 60 450 C40 675 60 900 60 900 L120 900 L120 0 Z" fill="var(--color-transit-red)" />
+        </svg>
+
+        {/* Right transit red field — 42% */}
+        <div
+          className="field-red w-full lg:w-[42%] py-16 lg:py-0 border-t-[5px] lg:border-t-0 border-[color:var(--color-night)]"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "relative",
+            overflow: "hidden",
+            zIndex: 2,
+          }}
+        >
+          {/* Downtown skyline silhouette */}
+          <div
+            className="train-enter"
+            style={{ width: "65%", maxWidth: 180 }}
+          >
+            <DowntownSkylineSVG />
+          </div>
+
+          {/* System status badge */}
+          <div
+            className="metro-label"
+            style={{
+              color: "var(--color-amber)",
+              marginTop: 32,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              letterSpacing: "0.35em",
+            }}
+          >
+            <div style={{ width: 8, height: 8, background: "var(--color-amber)", animation: "pulse 2s infinite" }} />
+            System Online
           </div>
         </div>
       </header>
 
-      {/* 2. ENGINE SECTION (Asymmetrical 30/70 Split) */}
-      <section id="engine" className="border-b-8 border-black bg-white">
-        <div className="flex flex-col lg:flex-row">
-
-          {/* Left 30% Sticky Title */}
-          <div className="w-full lg:w-[35%] p-10 md:p-16 border-b-8 lg:border-b-0 lg:border-r-8 border-black bg-[#F4F4F0]">
-            <div className="sticky top-20">
-              <h2 className="mb-6 text-5xl font-serif text-black uppercase leading-tight">The <br /> 4-Step <br /> Engine.</h2>
-              <p className="text-sm text-neutral-600 font-mono tracking-widest border-t-2 border-black pt-4">Fully automated. Zero human intervention required once engaged.</p>
-            </div>
+      {/* ===== ENGINE SECTION — 35/65 split ===== */}
+      <section
+        id="engine"
+        className="flex flex-col lg:flex-row"
+        style={{
+          borderBottom: "5px solid var(--color-night)",
+          minHeight: "60vh",
+        }}
+      >
+        {/* Left 35% — teal sticky label */}
+        <div
+          className="field-teal w-full lg:w-[35%] border-b-[5px] lg:border-b-0 lg:border-r-[5px] border-[color:var(--color-night)]"
+          style={{
+            padding: "clamp(32px, 5vw, 80px)",
+            position: "relative",
+          }}
+        >
+          <div style={{ position: "sticky", top: 80 }}>
+            {/* Amber stripe device */}
+            <div
+              style={{
+                width: 6,
+                height: 48,
+                background: "var(--color-amber)",
+                marginBottom: 24,
+              }}
+            />
+            <h2
+              className="metro-display"
+              style={{
+                fontSize: "clamp(2.5rem, 5vw, 5rem)",
+                color: "var(--color-canvas)",
+                marginBottom: 24,
+                lineHeight: 0.92,
+              }}
+            >
+              The<br />4-Step<br />Engine.
+            </h2>
+            <p
+              className="metro-label"
+              style={{ color: "rgba(237,232,220,0.6)" }}
+            >
+              Fully automated. Zero human intervention once engaged.
+            </p>
           </div>
+        </div>
 
-          {/* Right 65% Steps */}
-          <div className="w-full lg:w-[65%] p-10 md:p-16 flex flex-col gap-16">
-            {steps.map((step, index) => (
-              <div key={step.id} className="border-4 border-black p-8 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative transition-all duration-300 hover:translate-x-2 hover:-translate-y-2">
-                <div className="absolute -top-6 -left-6 bg-yellow-400 border-4 border-black w-12 h-12 flex items-center justify-center font-black text-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  {index + 1}
-                </div>
-                <div className="flex items-center gap-4 mb-6 mt-2">
-                  <div className="p-3 bg-neutral-100 border-2 border-black">
-                    {step.icon}
+        {/* Right 65% — steps */}
+        <div
+          className="w-full lg:w-[65%]"
+          style={{
+            padding: "clamp(32px, 5vw, 80px)",
+            background: "var(--color-canvas)",
+            display: "flex",
+            flexDirection: "column",
+            gap: 48,
+          }}
+        >
+          {steps.map((step, i) => (
+            <div
+              key={step.id}
+              style={{
+                borderTop: "3px solid var(--color-night)",
+                paddingTop: 32,
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+              }}
+            >
+              {/* Step number + title row */}
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 24 }}>
+                <span
+                  className="metro-display"
+                  style={{
+                    fontSize: "clamp(2.5rem, 6vw, 5rem)",
+                    color: "rgba(26,26,31,0.12)",
+                    lineHeight: 1,
+                    minWidth: 80,
+                  }}
+                >
+                  {step.num}
+                </span>
+                <div>
+                  <div
+                    className="metro-label"
+                    style={{ color: "var(--color-transit-red)", marginBottom: 4 }}
+                  >
+                    {step.subtitle}
                   </div>
-                  <div>
-                    <h3 className="text-2xl font-black uppercase font-mono">{step.title}</h3>
-                    <p className="text-xs font-bold text-neutral-500 uppercase tracking-widest">{step.subtitle}</p>
-                  </div>
-                </div>
-                <p className="text-neutral-800 text-lg leading-relaxed font-sans mb-6">
-                  {step.description}
-                </p>
-                <div className="bg-black text-green-400 p-4 font-mono text-xs leading-loose">
-                  {step.terminalCode}
+                  <h3
+                    className="metro-display"
+                    style={{
+                      fontSize: "clamp(1.5rem, 3vw, 2.5rem)",
+                      color: "var(--color-night)",
+                    }}
+                  >
+                    {step.title}
+                  </h3>
                 </div>
               </div>
-            ))}
-          </div>
+              <p
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "1rem",
+                  lineHeight: 1.65,
+                  color: "rgba(26,26,31,0.75)",
+                  maxWidth: 560,
+                }}
+              >
+                {step.description}
+              </p>
+              {/* Terminal block */}
+              <div
+                className="field-night"
+                style={{
+                  padding: "16px 20px",
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 400,
+                  fontSize: "0.75rem",
+                  letterSpacing: "0.05em",
+                  lineHeight: 1.8,
+                  color: "var(--color-amber)",
+                  whiteSpace: "pre",
+                  overflowX: "auto",
+                }}
+              >
+                {step.terminalCode}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* 3. PRICING SECTION (SaaS Focused) */}
-      <section id="arsenal" className="p-10 md:p-16">
-        <div className="mb-16 max-w-2xl">
-          <h2 className="mb-4 text-5xl font-serif text-black uppercase">Infrastructure Plans</h2>
-          <p className="text-neutral-600 font-mono text-sm tracking-widest border-t-2 border-black pt-4">Select your monthly compute allocation.</p>
+      {/* ===== PRICING SECTION ===== */}
+      <section
+        id="arsenal"
+        style={{
+          padding: "clamp(48px, 8vw, 128px) clamp(24px, 6vw, 96px)",
+          background: "var(--color-canvas)",
+        }}
+      >
+        {/* Section header */}
+        <div style={{ marginBottom: 64, borderBottom: "3px solid var(--color-night)", paddingBottom: 32 }}>
+          <div className="metro-label" style={{ color: "var(--color-transit-red)", marginBottom: 12 }}>
+            Infrastructure Plans
+          </div>
+          <h2
+            className="metro-display"
+            style={{ fontSize: "clamp(2.5rem, 6vw, 5.5rem)", color: "var(--color-night)" }}
+          >
+            Select Your Compute Allocation.
+          </h2>
         </div>
 
-        <motion.div
-          variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 gap-12 lg:grid-cols-2 max-w-5xl"
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: 0,
+            maxWidth: 900,
+            border: "5px solid var(--color-night)",
+          }}
         >
-          {/* TIER 1 */}
-          <div className="flex flex-col border-4 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-transform hover:-translate-y-2 relative">
-            <div className="p-8 border-b-4 border-black bg-neutral-100">
-              <h3 className="text-3xl font-black uppercase font-mono mb-2">The Mercenary</h3>
-              <p className="text-sm font-bold text-neutral-500 uppercase tracking-widest mb-6">Solo Operators</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-6xl font-serif">$99</span>
-                <span className="text-lg font-bold text-neutral-600">/ mo</span>
+          {/* TIER 1 — MERCENARY */}
+          <div
+            style={{
+              borderRight: "5px solid var(--color-night)",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {/* Header field */}
+            <div
+              className="field-teal"
+              style={{ padding: "32px 40px", borderBottom: "5px solid var(--color-night)" }}
+            >
+              <div className="metro-label" style={{ color: "var(--color-amber)", marginBottom: 12 }}>Solo Operators</div>
+              <h3
+                className="metro-display"
+                style={{ fontSize: "2.5rem", color: "var(--color-canvas)", marginBottom: 24 }}
+              >
+                The Mercenary
+              </h3>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span
+                  className="metro-display"
+                  style={{ fontSize: "4rem", color: "var(--color-canvas)" }}
+                >
+                  $99
+                </span>
+                <span style={{ fontFamily: "var(--font-body)", color: "rgba(237,232,220,0.7)", fontSize: "0.875rem" }}>/ month</span>
               </div>
             </div>
-            <div className="p-8 flex flex-col flex-grow">
-              <ul className="flex flex-col gap-4 mb-10 flex-grow font-mono text-sm">
-                <li className="flex items-start gap-3"><Check size={18} className="text-black shrink-0" /> <span>1,000 Leads Generated / month</span></li>
-                <li className="flex items-start gap-3"><Check size={18} className="text-black shrink-0" /> <span>Full Automation Suite</span></li>
-                <li className="flex items-start gap-3"><Check size={18} className="text-black shrink-0" /> <span>Cloud Dashboard Access</span></li>
-                <li className="flex items-start gap-3"><Check size={18} className="text-black shrink-0" /> <span>Standard Support</span></li>
-              </ul>
-              <button onClick={() => handleCheckout('price_1Ta4cMLCpB0Zbo9scr4JyLzE')} className="w-full py-4 border-4 border-black bg-white hover:bg-black hover:text-white transition-colors font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2">
-                <Terminal size={18} /> Initialize Plan
+            {/* Features */}
+            <div style={{ padding: "32px 40px", flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
+              {["1,000 Leads Generated / month", "Full Automation Suite", "Cloud Dashboard Access", "Standard Support"].map(f => (
+                <div key={f} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 6, height: 6, background: "var(--color-transit-red)", flexShrink: 0 }} />
+                  <span style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: "0.875rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>{f}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: "0 40px 40px" }}>
+              <button
+                onClick={() => handleCheckout("price_1Ta4cMLCpB0Zbo9scr4JyLzE")}
+                className="metro-btn-primary"
+                style={{ width: "100%", justifyContent: "center", display: "flex", alignItems: "center", gap: 8 }}
+              >
+                <Terminal size={16} />
+                Initialize Plan
               </button>
             </div>
           </div>
 
-          {/* TIER 2 */}
-          <div className="flex flex-col border-4 border-black bg-black text-white shadow-[12px_12px_0px_0px_rgba(234,179,8,1)] transition-transform hover:-translate-y-2 relative">
-            <div className="absolute -top-5 right-5 bg-yellow-400 text-black px-4 py-1 border-2 border-black font-bold text-xs uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          {/* Amber stripe between tiers */}
+          <div className="stripe-amber" style={{ display: "none" }} aria-hidden="true" />
+
+          {/* TIER 2 — TASKFORCE */}
+          <div
+            style={{ display: "flex", flexDirection: "column", position: "relative" }}
+          >
+            {/* "Most Deployed" badge */}
+            <div
+              style={{
+                position: "absolute",
+                top: -3,
+                right: 32,
+                background: "var(--color-amber)",
+                color: "var(--color-night)",
+                fontFamily: "var(--font-display)",
+                fontWeight: 900,
+                fontSize: "0.625rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.3em",
+                padding: "6px 14px",
+                borderBottom: "5px solid var(--color-night)",
+                borderLeft: "5px solid var(--color-night)",
+                borderRight: "5px solid var(--color-night)",
+              }}
+            >
               Most Deployed
             </div>
-            <div className="p-8 border-b-4 border-neutral-800 bg-neutral-900">
-              <h3 className="text-3xl font-black uppercase font-mono mb-2 text-white">The Taskforce</h3>
-              <p className="text-sm font-bold text-neutral-400 uppercase tracking-widest mb-6">Agency Scale</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-6xl font-serif text-white">$249</span>
-                <span className="text-lg font-bold text-neutral-500">/ mo</span>
+            {/* Header field */}
+            <div
+              className="field-red"
+              style={{ padding: "32px 40px", borderBottom: "5px solid var(--color-night)", paddingTop: 56 }}
+            >
+              <div className="metro-label" style={{ color: "var(--color-amber)", marginBottom: 12 }}>Agency Scale</div>
+              <h3
+                className="metro-display"
+                style={{ fontSize: "2.5rem", color: "var(--color-canvas)", marginBottom: 24 }}
+              >
+                The Taskforce
+              </h3>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span
+                  className="metro-display"
+                  style={{ fontSize: "4rem", color: "var(--color-canvas)" }}
+                >
+                  $249
+                </span>
+                <span style={{ fontFamily: "var(--font-body)", color: "rgba(237,232,220,0.7)", fontSize: "0.875rem" }}>/ month</span>
               </div>
             </div>
-            <div className="p-8 flex flex-col flex-grow">
-              <ul className="flex flex-col gap-4 mb-10 flex-grow font-mono text-sm text-neutral-300">
-                <li className="flex items-start gap-3"><Check size={18} className="text-yellow-400 shrink-0" /> <span className="text-white">5,000 Leads Generated / month</span></li>
-                <li className="flex items-start gap-3"><Check size={18} className="text-yellow-400 shrink-0" /> <span className="text-white">Full Automation Suite</span></li>
-                <li className="flex items-start gap-3"><Check size={18} className="text-yellow-400 shrink-0" /> <span className="text-white">Priority API Queues</span></li>
-                <li className="flex items-start gap-3"><Check size={18} className="text-yellow-400 shrink-0" /> <span className="text-white">Priority Support</span></li>
-              </ul>
-              <button onClick={() => handleCheckout('price_1Ta4clLCpB0Zbo9s8UvxaGrq')} className="w-full py-4 border-4 border-white bg-white text-black hover:bg-yellow-400 hover:border-yellow-400 transition-colors font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2">
-                <Terminal size={18} /> Initialize Plan
+            {/* Features */}
+            <div style={{ padding: "32px 40px", flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
+              {["5,000 Leads Generated / month", "Full Automation Suite", "Priority API Queues", "Priority Support"].map(f => (
+                <div key={f} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 6, height: 6, background: "var(--color-teal)", flexShrink: 0 }} />
+                  <span style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: "0.875rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>{f}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: "0 40px 40px" }}>
+              <button
+                onClick={() => handleCheckout("price_1Ta4clLCpB0Zbo9s8UvxaGrq")}
+                className="metro-btn-primary"
+                style={{
+                  width: "100%",
+                  justifyContent: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  background: "var(--color-night)",
+                  borderColor: "var(--color-night)",
+                }}
+              >
+                <Terminal size={16} />
+                Initialize Plan
               </button>
             </div>
           </div>
-        </motion.div>
+        </div>
 
-        {/* Custom Tier */}
-        <div className="mt-16 border-4 border-black bg-[#F4F4F0] p-8 md:p-12 max-w-5xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col md:flex-row items-center justify-between gap-8">
+        {/* Custom tier CTA */}
+        <div
+          style={{
+            marginTop: 48,
+            maxWidth: 900,
+            borderTop: "3px solid var(--color-night)",
+            paddingTop: 40,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 24,
+          }}
+        >
           <div>
-            <h3 className="text-2xl font-serif font-bold text-black mb-2">Custom Deployment Required?</h3>
-            <p className="text-neutral-700 font-mono text-sm max-w-lg leading-relaxed">
-              For teams requiring more than 5,000 leads or Bring-Your-Own-Key (BYOK) architecture to preserve margins, contact our engineering lead.
+            <h3
+              className="metro-display"
+              style={{ fontSize: "1.5rem", marginBottom: 8, color: "var(--color-night)" }}
+            >
+              Custom Deployment Required?
+            </h3>
+            <p
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "0.875rem",
+                color: "rgba(26,26,31,0.65)",
+                maxWidth: 480,
+                lineHeight: 1.6,
+              }}
+            >
+              For teams requiring 5,000+ leads or BYOK architecture to preserve margins, contact the engineering lead.
             </p>
           </div>
           <a
             href="mailto:er6798@gmail.com?subject=Enterprise%20SaaS%20Inquiry"
-            className="shrink-0 px-8 py-4 bg-black text-white font-bold uppercase tracking-widest border-4 border-black hover:bg-white hover:text-black transition-colors flex items-center gap-2"
+            className="metro-btn-ghost"
+            style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}
           >
-            <Send size={18} />
+            <Send size={16} />
             Contact Architect
           </a>
         </div>
       </section>
+
+      {/* ===== FOOTER ===== */}
+      <footer
+        className="field-night"
+        style={{
+          padding: "32px 48px",
+          borderTop: "5px solid var(--color-night)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <span
+          className="metro-display"
+          style={{ fontSize: "1rem", color: "var(--color-canvas)" }}
+        >
+          SortingSource
+        </span>
+        <span
+          className="metro-label"
+          style={{ color: "rgba(237,232,220,0.45)", letterSpacing: "0.3em" }}
+        >
+          v3.0 // Enterprise Infrastructure
+        </span>
+      </footer>
     </div>
   );
 }

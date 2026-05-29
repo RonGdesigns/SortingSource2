@@ -6,8 +6,9 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "../../lib/firebase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { UserPlus, Terminal, ArrowRight, ShieldAlert, Loader2, Chrome } from "lucide-react";
-import { motion } from "framer-motion";
+import { Terminal, ArrowRight, ShieldAlert, Loader2, Chrome } from "lucide-react";
+
+const ADMIN_EMAILS = ["er6798@gmail.com", "rongdesigns313@gmail.com"];
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -20,40 +21,27 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !confirmPassword) {
-      return setError("All fields are required.");
-    }
-    if (password !== confirmPassword) {
-      return setError("Passwords do not match.");
-    }
-    if (password.length < 6) {
-      return setError("Password must be at least 6 characters.");
-    }
+    if (!email || !password || !confirmPassword) return setError("All fields are required.");
+    if (password !== confirmPassword) return setError("Passwords do not match.");
+    if (password.length < 6) return setError("Password must be at least 6 characters.");
     setIsLoading(true);
     setError("");
-
     try {
-      // 1. Create user in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // 2. Initialize Firestore document for subscription status
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        subscriptionStatus: "inactive",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-
-      // 3. Redirect to paywall page since new users start as inactive
-      router.push("/paywall");
-    } catch (err: any) {
-      console.error(err);
-      if (err.code === "auth/email-already-in-use") {
-        setError("This email address is already registered.");
-      } else {
-        setError(err.message || "Failed to create account.");
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
+      
+      const isAdmin = ADMIN_EMAILS.includes(user.email || "");
+      if (!isAdmin) {
+        await setDoc(doc(db, "users", user.uid), {
+          email: user.email,
+          subscriptionStatus: "inactive",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
       }
+
+      router.push(isAdmin ? "/dashboard" : "/paywall");
+    } catch (err: any) {
+      setError(err.code === "auth/email-already-in-use" ? "This email address is already registered." : err.message || "Failed to create account.");
     } finally {
       setIsLoading(false);
     }
@@ -64,163 +52,207 @@ export default function SignupPage() {
     setError("");
     const provider = new GoogleAuthProvider();
     try {
-      const userCredential = await signInWithPopup(auth, provider);
-      const user = userCredential.user;
+      const { user } = await signInWithPopup(auth, provider);
       
-      // Ensure Firestore user document exists
-      const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-      if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
-          email: user.email,
-          subscriptionStatus: "inactive",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
+      const isAdmin = ADMIN_EMAILS.includes(user.email || "");
+      if (!isAdmin) {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) {
+          await setDoc(userDocRef, {
+            email: user.email,
+            subscriptionStatus: "inactive",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          });
+        }
       }
-      router.push("/paywall");
+
+      router.push(isAdmin ? "/dashboard" : "/paywall");
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Failed to register with Google.");
+      if (err.code === "auth/unauthorized-domain") {
+        setError("Firebase Auth: This domain is not authorized. Go to Firebase Console -> Authentication -> Settings -> Authorized Domains and add this deployment domain.");
+      } else {
+        setError(err.message || "Failed to register with Google.");
+      }
     } finally {
       setGoogleLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F4F0] text-black flex flex-col md:flex-row border-8 border-black font-sans selection:bg-black selection:text-white">
-      {/* Left 40% - Asymmetrical Branding Sidebar */}
-      <div className="w-full md:w-[40%] bg-black text-white p-8 md:p-10 lg:p-16 flex flex-col justify-between border-b-8 md:border-b-0 md:border-r-8 border-black relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_center,_#fff_1px,_transparent_1px)]" style={{ backgroundSize: '16px 16px' }}></div>
-        
-        <div className="relative z-10">
-          <Link href="/" className="inline-flex items-center gap-2 px-3 py-1 border border-neutral-700 bg-neutral-900 rounded-lg text-xs font-mono tracking-widest text-neutral-400 uppercase">
-            <Terminal size={12} className="text-white" />
-            SortingSource
-          </Link>
-        </div>
+    <div className="min-h-screen flex flex-col lg:flex-row" style={{ fontFamily: "var(--font-body)" }}>
 
-        <div className="my-12 md:my-0 relative z-10">
-          <h1 className="text-4xl md:text-5xl lg:text-7xl font-serif leading-none tracking-tight mb-6">
-            Begin <br />
-            <span className="italic bg-white text-black px-2 py-0.5 select-none font-bold">Deployment.</span>
+      {/* ── LEFT SIDEBAR — Transit Red field 40% ── */}
+      <div
+        className="field-red w-full lg:w-[40%] border-b-[5px] lg:border-b-0 lg:border-r-[5px] border-[color:var(--color-night)]"
+        style={{
+          padding: "clamp(32px, 5vw, 72px)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Top: logo */}
+        <Link
+          href="/"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            fontFamily: "var(--font-display)",
+            fontWeight: 900,
+            fontSize: "0.75rem",
+            textTransform: "uppercase",
+            letterSpacing: "0.25em",
+            color: "var(--color-canvas)",
+            textDecoration: "none",
+            width: "max-content",
+          }}
+        >
+          <Terminal size={14} color="var(--color-amber)" />
+          SortingSource
+        </Link>
+
+        {/* Center headline */}
+        <div style={{ margin: "40px 0" }}>
+          <div style={{ width: 6, height: 48, background: "var(--color-amber)", marginBottom: 24 }} />
+          <h1
+            className="metro-display"
+            style={{
+              fontSize: "clamp(2.8rem, 6vw, 5.5rem)",
+              color: "var(--color-canvas)",
+              lineHeight: 0.92,
+              marginBottom: 24,
+            }}
+          >
+            Begin<br />
+            <span style={{ fontStyle: "italic", color: "var(--color-amber)" }}>Deployment.</span>
           </h1>
-          <p className="font-mono text-xs text-neutral-400 max-w-xs leading-relaxed uppercase tracking-wider">
-            Establish your user credentials to allocate outbound compute resources and engage search modules.
+          <p
+            className="metro-label"
+            style={{ color: "rgba(237,232,220,0.6)", lineHeight: 1.7, maxWidth: 280 }}
+          >
+            Establish your operator credentials to allocate outbound compute resources and engage search modules.
           </p>
         </div>
 
-        <div className="font-mono text-[10px] text-neutral-500 uppercase tracking-widest relative z-10">
-          INITIALIZING HANDSHAKE PROTOCOLS...
+        {/* Bottom notice */}
+        <div className="metro-label" style={{ color: "rgba(237,232,220,0.4)" }}>
+          Initializing Handshake Protocols...
         </div>
       </div>
 
-      {/* Right 60% - Signup Form Container */}
-      <div className="w-full md:w-[60%] flex items-center justify-center p-8 md:p-16">
-        <div className="max-w-md w-full">
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }} 
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 100 }}
-            className="bg-white border-4 border-black p-8 md:p-12 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-[24px_8px_24px_8px]"
-          >
-            <div className="mb-8">
-              <h2 className="text-3xl font-black uppercase tracking-tight font-mono flex items-center gap-2">
-                <UserPlus className="w-6 h-6 shrink-0" /> Registration
-              </h2>
-              <p className="text-xs text-neutral-500 font-mono uppercase tracking-wider mt-1">Deploy new operator node</p>
+      {/* ── RIGHT FORM — Canvas 60% ── */}
+      <div
+        className="field-canvas flex-1"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "clamp(32px, 5vw, 80px)",
+        }}
+      >
+        <div style={{ maxWidth: 440, width: "100%" }}>
+
+          <div style={{ borderBottom: "3px solid var(--color-night)", paddingBottom: 24, marginBottom: 40 }}>
+            <div className="metro-label" style={{ color: "var(--color-transit-red)", marginBottom: 8 }}>
+              Registration
             </div>
+            <h2 className="metro-display" style={{ fontSize: "2rem", color: "var(--color-night)" }}>
+              Deploy New Operator Node
+            </h2>
+          </div>
 
-            <form onSubmit={handleSignup} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-black uppercase font-mono tracking-widest text-neutral-600 block mb-2">EMAIL ADDRESS</label>
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="operator@sortingsource.com"
-                  className="w-full px-4 py-3 bg-neutral-50 border-2 border-neutral-300 focus:border-black rounded-xl text-black font-mono text-sm outline-none transition-all placeholder:text-neutral-400"
+          <form onSubmit={handleSignup} style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+            {[
+              { id: "signup-email", label: "Email Address", type: "email", value: email, set: setEmail, placeholder: "operator@sortingsource.com" },
+              { id: "signup-password", label: "Password", type: "password", value: password, set: setPassword, placeholder: "Minimum 6 characters" },
+              { id: "signup-confirm", label: "Confirm Password", type: "password", value: confirmPassword, set: setConfirmPassword, placeholder: "Re-enter password" },
+            ].map(field => (
+              <div key={field.id}>
+                <label className="metro-label" style={{ color: "rgba(26,26,31,0.5)", display: "block", marginBottom: 8 }}>
+                  {field.label}
+                </label>
+                <input
+                  id={field.id}
+                  type={field.type}
+                  value={field.value}
+                  onChange={e => field.set(e.target.value)}
+                  placeholder={field.placeholder}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    borderBottom: "2px solid var(--color-night)",
+                    padding: "10px 4px",
+                    outline: "none",
+                    fontFamily: "var(--font-body)",
+                    fontWeight: 400,
+                    color: "var(--color-night)",
+                    fontSize: "0.875rem",
+                    width: "100%",
+                    transition: "border-color 0.2s",
+                  }}
+                  onFocus={e => (e.target.style.borderBottomColor = "var(--color-transit-red)")}
+                  onBlur={e => (e.target.style.borderBottomColor = "var(--color-night)")}
                 />
               </div>
+            ))}
 
-              <div>
-                <label className="text-[10px] font-black uppercase font-mono tracking-widest text-neutral-600 block mb-2">PASSWORD</label>
-                <input 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Minimum 6 characters"
-                  className="w-full px-4 py-3 bg-neutral-50 border-2 border-neutral-300 focus:border-black rounded-xl text-black font-mono text-sm outline-none transition-all placeholder:text-neutral-400"
-                />
+            {error && (
+              <div
+                style={{
+                  background: "var(--color-transit-red)",
+                  color: "var(--color-canvas)",
+                  padding: "12px 16px",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 8,
+                }}
+              >
+                <ShieldAlert size={14} style={{ flexShrink: 0, marginTop: 2 }} />
+                <span className="metro-label" style={{ letterSpacing: "0.05em", textTransform: "none" }}>{error}</span>
+              </div>
+            )}
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 8 }}>
+              <button
+                id="signup-submit"
+                type="submit"
+                disabled={isLoading || googleLoading}
+                className="metro-btn-primary"
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", opacity: (isLoading || googleLoading) ? 0.6 : 1 }}
+              >
+                {isLoading ? <><Loader2 className="animate-spin" size={16} /> Creating Node...</> : <>Register Node <ArrowRight size={16} /></>}
+              </button>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ flex: 1, height: 1, background: "var(--color-night)", opacity: 0.2 }} />
+                <span className="metro-label" style={{ color: "rgba(26,26,31,0.4)" }}>or</span>
+                <div style={{ flex: 1, height: 1, background: "var(--color-night)", opacity: 0.2 }} />
               </div>
 
-              <div>
-                <label className="text-[10px] font-black uppercase font-mono tracking-widest text-neutral-600 block mb-2">CONFIRM PASSWORD</label>
-                <input 
-                  type="password" 
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Re-enter password"
-                  className="w-full px-4 py-3 bg-neutral-50 border-2 border-neutral-300 focus:border-black rounded-xl text-black font-mono text-sm outline-none transition-all placeholder:text-neutral-400"
-                />
-              </div>
-
-              {error && (
-                <div className="text-red-600 text-xs bg-red-50 border-2 border-red-300 p-4 rounded-xl flex items-start gap-2 font-mono uppercase font-bold">
-                  <ShieldAlert size={14} className="shrink-0 mt-0.5" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <div className="pt-2 space-y-3">
-                <button 
-                  type="submit" 
-                  disabled={isLoading || googleLoading}
-                  className="w-full py-4 bg-black text-white hover:bg-neutral-900 font-mono font-bold uppercase tracking-widest text-xs border-2 border-black flex items-center justify-center gap-2 transition-all active:translate-y-0.5 rounded-xl shadow-[4px_4px_0px_0px_rgba(200,200,200,1)] hover:shadow-none"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="animate-spin" size={16} /> Creating Node...
-                    </>
-                  ) : (
-                    <>
-                      Register Node <ArrowRight size={16} />
-                    </>
-                  )}
-                </button>
-
-                <div className="flex items-center my-4">
-                  <div className="flex-grow border-t-2 border-neutral-200"></div>
-                  <span className="px-3 text-[10px] font-mono text-neutral-400 uppercase tracking-widest">or</span>
-                  <div className="flex-grow border-t-2 border-neutral-200"></div>
-                </div>
-
-                <button 
-                  type="button"
-                  onClick={handleGoogleLogin}
-                  disabled={isLoading || googleLoading}
-                  className="w-full py-4 bg-white text-black hover:bg-neutral-50 font-mono font-bold uppercase tracking-widest text-xs border-2 border-black flex items-center justify-center gap-2 transition-all active:translate-y-0.5 rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none"
-                >
-                  {googleLoading ? (
-                    <>
-                      <Loader2 className="animate-spin" size={16} /> Connecting...
-                    </>
-                  ) : (
-                    <>
-                      <Chrome size={16} /> Register with Google
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-8 border-t-2 border-neutral-200 pt-6 text-center text-xs font-mono">
-              <span className="text-neutral-500">Already registered? </span>
-              <Link href="/login" className="text-black hover:underline uppercase font-bold">
-                Authorize Node
-              </Link>
+              <button
+                id="signup-google"
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={isLoading || googleLoading}
+                className="metro-btn-ghost"
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", opacity: (isLoading || googleLoading) ? 0.6 : 1 }}
+              >
+                {googleLoading ? <><Loader2 className="animate-spin" size={16} /> Connecting...</> : <><Chrome size={16} /> Register with Google</>}
+              </button>
             </div>
-          </motion.div>
+          </form>
+
+          <div style={{ marginTop: 40, borderTop: "2px solid rgba(26,26,31,0.15)", paddingTop: 24, textAlign: "center" }}>
+            <span className="metro-label" style={{ color: "rgba(26,26,31,0.4)" }}>Already registered? </span>
+            <Link href="/login" className="metro-label" style={{ color: "var(--color-transit-red)", textDecoration: "none" }}>
+              Authorize Node →
+            </Link>
+          </div>
         </div>
       </div>
     </div>
