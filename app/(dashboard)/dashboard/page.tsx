@@ -91,6 +91,7 @@ export default function Dashboard() {
   const [rememberKeys, setRememberKeys] = useState(false);
   const [powerSearch, setPowerSearch] = useState(false);
   const [useLocalEngine, setUseLocalEngine] = useState(false);
+  const [localEngineStatus, setLocalEngineStatus] = useState<"unknown" | "online" | "offline">("unknown");
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [validationError, setValidationError] = useState("");
@@ -102,6 +103,32 @@ export default function Dashboard() {
 
   const CLOUD_API_URL = process.env.NEXT_PUBLIC_API_URL || "https://sorting-source-backend.onrender.com";
   const API_URL = useLocalEngine ? "http://localhost:8000" : CLOUD_API_URL;
+
+  const checkLocalEngine = async (): Promise<boolean> => {
+    try {
+      const res = await fetch("http://localhost:8000/health", { signal: AbortSignal.timeout(2000) });
+      if (res.ok) { setLocalEngineStatus("online"); return true; }
+    } catch {
+      // fall through
+    }
+    setLocalEngineStatus("offline");
+    return false;
+  };
+
+  const handleLocalEngineToggle = async () => {
+    const next = !useLocalEngine;
+    if (next) {
+      setStatusMessage("Pinging local engine...");
+      const alive = await checkLocalEngine();
+      if (!alive) {
+        setStatusMessage("⚠ Local Engine offline. Run install_local_engine.bat on your PC first, or keep this OFF to use the cloud.");
+        return; // Don't switch on if offline
+      }
+    } else {
+      setLocalEngineStatus("unknown");
+    }
+    setUseLocalEngine(next);
+  };
 
   useEffect(() => {
     let activeCampaign = campaignName;
@@ -259,8 +286,13 @@ export default function Dashboard() {
           className="field-night self-start sm:self-auto"
           style={{ padding: "8px 16px", display: "flex", alignItems: "center", gap: 8 }}
         >
-          <Activity size={14} color="var(--color-teal)" style={{ animation: "pulse 2s infinite" }} />
-          <span className="metro-label" style={{ color: "var(--color-teal)" }}>{useLocalEngine ? "Local Engine Online" : "Cloud Engine Online"}</span>
+          <Activity size={14}
+            color={useLocalEngine ? (localEngineStatus === "online" ? "#22c55e" : "var(--color-transit-red)") : "var(--color-teal)"}
+            style={{ animation: "pulse 2s infinite" }}
+          />
+          <span className="metro-label" style={{ color: useLocalEngine ? (localEngineStatus === "online" ? "#22c55e" : "var(--color-transit-red)") : "var(--color-teal)" }}>
+            {useLocalEngine ? (localEngineStatus === "online" ? "Local Engine Online" : "Local Engine Offline") : "Cloud Engine Online"}
+          </span>
         </div>
       </header>
 
@@ -327,7 +359,7 @@ export default function Dashboard() {
             <MetroToggle label="Accumulate" active={keepExisting} onClick={() => setKeepExisting(!keepExisting)} />
             <MetroToggle label="Skip Known" active={useBlacklist} onClick={() => setUseBlacklist(!useBlacklist)} />
             <MetroToggle label="Save Key" active={rememberKeys} onClick={() => setRememberKeys(!rememberKeys)} />
-            <MetroToggle label="Local Engine" active={useLocalEngine} onClick={() => setUseLocalEngine(!useLocalEngine)} />
+            <MetroToggle label="Local Engine" active={useLocalEngine} onClick={handleLocalEngineToggle} />
           </div>
 
           {/* Campaign + actions */}

@@ -214,6 +214,11 @@ async def force_cors_headers(request: Request, call_next):
             headers={"Access-Control-Allow-Origin": "*"}
         )
 
+@app.get("/health")
+async def health_check():
+    return {"status": "online", "engine": "local" if not os.environ.get("RENDER") else "cloud"}
+
+
 # ==========================================
 # 6. ENTERPRISE DATA PATHING
 # ==========================================
