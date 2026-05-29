@@ -118,10 +118,10 @@ export default function Dashboard() {
   const handleLocalEngineToggle = async () => {
     const next = !useLocalEngine;
     if (next) {
-      setStatusMessage("Pinging local engine...");
+      setStatusMessage("Pinging FAST Search engine...");
       const alive = await checkLocalEngine();
       if (!alive) {
-        setStatusMessage("⚠ Local Engine offline. Run install_local_engine.bat on your PC first, or keep this OFF to use the cloud.");
+        setStatusMessage("⚠ FAST Search offline. Run install_local_engine.bat on your PC first, or keep this OFF to use the cloud.");
         return; // Don't switch on if offline
       }
     } else {
@@ -291,7 +291,7 @@ export default function Dashboard() {
             style={{ animation: "pulse 2s infinite" }}
           />
           <span className="metro-label" style={{ color: useLocalEngine ? (localEngineStatus === "online" ? "#22c55e" : "var(--color-transit-red)") : "var(--color-teal)" }}>
-            {useLocalEngine ? (localEngineStatus === "online" ? "Local Engine Online" : "Local Engine Offline") : "Cloud Engine Online"}
+            {useLocalEngine ? (localEngineStatus === "online" ? "FAST Search Online" : "FAST Search Offline") : "Cloud Engine Online"}
           </span>
         </div>
       </header>
@@ -341,7 +341,7 @@ export default function Dashboard() {
             {[
               { id: "hunt-city", label: "City", val: city, set: setCity },
               { id: "hunt-region", label: "State / Country / Province", val: region, set: setRegion },
-              { id: "hunt-postal", label: "Postal", val: zipCode, set: setZipCode },
+              { id: "hunt-postal", label: "Postal (Optional)", val: zipCode, set: setZipCode },
             ].map(f => (
               <div key={f.id}>
                 <label className="metro-label" style={{ color: "rgba(26,26,31,0.5)", display: "block", marginBottom: 8 }}>{f.label}</label>
@@ -359,7 +359,7 @@ export default function Dashboard() {
             <MetroToggle label="Accumulate" active={keepExisting} onClick={() => setKeepExisting(!keepExisting)} />
             <MetroToggle label="Skip Known" active={useBlacklist} onClick={() => setUseBlacklist(!useBlacklist)} />
             <MetroToggle label="Save Key" active={rememberKeys} onClick={() => setRememberKeys(!rememberKeys)} />
-            <MetroToggle label="Local Engine" active={useLocalEngine} onClick={handleLocalEngineToggle} />
+            <MetroToggle label="FAST Search (PC Only)" active={useLocalEngine} onClick={handleLocalEngineToggle} />
           </div>
 
           {/* Campaign + actions */}
