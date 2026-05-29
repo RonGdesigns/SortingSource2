@@ -302,7 +302,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { id: "hunt-city", label: "City", val: city, set: setCity },
-              { id: "hunt-region", label: "Region", val: region, set: setRegion },
+              { id: "hunt-region", label: "State / Country / Province", val: region, set: setRegion },
               { id: "hunt-postal", label: "Postal", val: zipCode, set: setZipCode },
             ].map(f => (
               <div key={f.id}>
@@ -317,6 +317,7 @@ export default function Dashboard() {
           {/* Toggles */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 24 }}>
             <MetroToggle label="Power Search" active={powerSearch} onClick={() => setPowerSearch(!powerSearch)} />
+            <MetroToggle label="International" active={international} onClick={() => setInternational(!international)} />
             <MetroToggle label="Accumulate" active={keepExisting} onClick={() => setKeepExisting(!keepExisting)} />
             <MetroToggle label="Skip Known" active={useBlacklist} onClick={() => setUseBlacklist(!useBlacklist)} />
             <MetroToggle label="Save Key" active={rememberKeys} onClick={() => setRememberKeys(!rememberKeys)} />
