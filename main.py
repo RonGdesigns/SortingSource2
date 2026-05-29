@@ -486,7 +486,7 @@ async def execute_hunt(request: HuntRequest):
 
         # --- 4. PARALLEL AUDIT ---
         # Reduce concurrency on Render to prevent memory thrashing on small instances
-        concurrent_limit = 5 if os.environ.get("RENDER") else 15
+        concurrent_limit = 10 if os.environ.get("RENDER") else 20
         sem = asyncio.Semaphore(concurrent_limit) 
 
         async def throttled_audit(context, pl):
