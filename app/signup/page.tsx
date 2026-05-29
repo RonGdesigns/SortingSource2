@@ -90,18 +90,18 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-[#F4F4F0] text-black flex flex-col md:flex-row border-8 border-black font-sans selection:bg-black selection:text-white">
       {/* Left 40% - Asymmetrical Branding Sidebar */}
-      <div className="w-full md:w-[40%] bg-black text-white p-8 md:p-16 flex flex-col justify-between border-b-8 md:border-b-0 md:border-r-8 border-black relative overflow-hidden">
+      <div className="w-full md:w-[40%] bg-black text-white p-8 md:p-10 lg:p-16 flex flex-col justify-between border-b-8 md:border-b-0 md:border-r-8 border-black relative overflow-hidden">
         <div className="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_center,_#fff_1px,_transparent_1px)]" style={{ backgroundSize: '16px 16px' }}></div>
         
         <div className="relative z-10">
           <Link href="/" className="inline-flex items-center gap-2 px-3 py-1 border border-neutral-700 bg-neutral-900 rounded-lg text-xs font-mono tracking-widest text-neutral-400 uppercase">
             <Terminal size={12} className="text-white" />
-            SortingSource // Gateway
+            SortingSource
           </Link>
         </div>
 
         <div className="my-12 md:my-0 relative z-10">
-          <h1 className="text-5xl md:text-7xl font-serif leading-none tracking-tight mb-6">
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-serif leading-none tracking-tight mb-6">
             Begin <br />
             <span className="italic bg-white text-black px-2 py-0.5 select-none font-bold">Deployment.</span>
           </h1>
