@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../lib/firebase";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db } from "../../lib/firebase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Key, Terminal, ArrowRight, ShieldAlert, Loader2 } from "lucide-react";
+import { Key, Terminal, ArrowRight, ShieldAlert, Loader2, Chrome } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function LoginPage() {
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -35,6 +37,34 @@ export default function LoginPage() {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    setError("");
+    const provider = new GoogleAuthProvider();
+    try {
+      const userCredential = await signInWithPopup(auth, provider);
+      const user = userCredential.user;
+      
+      // Ensure Firestore user document exists
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+          email: user.email,
+          subscriptionStatus: "inactive",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      }
+      router.push("/dashboard");
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to authenticate with Google.");
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -84,7 +114,7 @@ export default function LoginPage() {
               <p className="text-xs text-neutral-500 font-mono uppercase tracking-wider mt-1">Provide your access credentials</p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="text-[10px] font-black uppercase font-mono tracking-widest text-neutral-600 block mb-2">EMAIL ADDRESS</label>
                 <input 
@@ -114,10 +144,10 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <div className="pt-2">
+              <div className="pt-2 space-y-3">
                 <button 
                   type="submit" 
-                  disabled={isLoading}
+                  disabled={isLoading || googleLoading}
                   className="w-full py-4 bg-black text-white hover:bg-neutral-900 font-mono font-bold uppercase tracking-widest text-xs border-2 border-black flex items-center justify-center gap-2 transition-all active:translate-y-0.5 rounded-xl shadow-[4px_4px_0px_0px_rgba(200,200,200,1)] hover:shadow-none"
                 >
                   {isLoading ? (
@@ -127,6 +157,29 @@ export default function LoginPage() {
                   ) : (
                     <>
                       Authorize Node <ArrowRight size={16} />
+                    </>
+                  )}
+                </button>
+
+                <div className="flex items-center my-4">
+                  <div className="flex-grow border-t-2 border-neutral-200"></div>
+                  <span className="px-3 text-[10px] font-mono text-neutral-400 uppercase tracking-widest">or</span>
+                  <div className="flex-grow border-t-2 border-neutral-200"></div>
+                </div>
+
+                <button 
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  disabled={isLoading || googleLoading}
+                  className="w-full py-4 bg-white text-black hover:bg-neutral-50 font-mono font-bold uppercase tracking-widest text-xs border-2 border-black flex items-center justify-center gap-2 transition-all active:translate-y-0.5 rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none"
+                >
+                  {googleLoading ? (
+                    <>
+                      <Loader2 className="animate-spin" size={16} /> Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <Chrome size={16} /> Continue with Google
                     </>
                   )}
                 </button>

@@ -27,8 +27,8 @@ export default function InstructionsPage() {
             <p>SortingSource is a standalone, local-first lead generation and outreach architecture. Unlike traditional SaaS, you own the engine.</p>
             <ul className="list-disc pl-6 space-y-4">
               <li><strong>Accountability:</strong> By downloading and entering your API keys, you accept full responsibility for your outreach actions. You are solely accountable for compliance with anti-spam laws (CAN-SPAM, TCPA) and the terms of service of your API providers.</li>
-              <li><strong>System Longevity & Self-Updating:</strong> SortingSource is engineered to be future-proof. You do not need to wait for manual software updates to deploy the latest AI models. By using the <strong>Model Override</strong> section in the sidebar, you can manually input new model strings (e.g., <code>gemini-3.0-pro</code> or <code>gpt-6-turbo</code>, or <code>specific Hugging Face paths</code>) as they are released by providers.</li>
-              <li><strong>Factory Defaults:</strong> If the Model Override fields are left blank, the engine automatically reverts to factory-tested "Compatible Models" (<code>gemini-3.5-flash</code>, <code>gpt-5.4-mini</code> and <code>Qwen 2.5 72B Instruct</code>) to ensure your operation never goes offline.</li>
+              <li><strong>System Longevity & Self-Updating:</strong> SortingSource is engineered to be future-proof. You do not need to wait for manual software updates to deploy the latest language models. By using the <strong>Model Override</strong> section in the sidebar, you can manually input new model strings (e.g., <code>gemini-2.5-pro</code> or <code>gpt-4o-mini</code>, or <code>specific Hugging Face paths</code>) as they are released by providers.</li>
+              <li><strong>Factory Defaults:</strong> If the Model Override fields are left blank, the engine automatically reverts to factory-tested "Compatible Models" (<code>gemini-2.5-flash</code>, <code>gpt-4o-mini</code> and <code>Qwen 2.5 72B Instruct</code>) to ensure your operation never goes offline.</li>
             </ul>
           </div>
         </section>
@@ -43,7 +43,7 @@ export default function InstructionsPage() {
             <p>To fuel the engine, you must link your own provider accounts:</p>
             <ul className="list-disc pl-6 space-y-4">
               <li><strong>Google Places API:</strong> Used for the "Hunter" module. <a href="https://console.cloud.google.com/apis/credentials" target="_blank" className="text-blue-600 underline font-bold hover:text-blue-800">Create Key Here</a>.</li>
-              <li><strong>Gemini AI (Google):</strong> Primary synthesis engine. <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-blue-600 underline font-bold hover:text-blue-800">Create Key Here</a>.</li>
+              <li><strong>Gemini API (Google):</strong> Primary text generation engine. <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-blue-600 underline font-bold hover:text-blue-800">Create Key Here</a>.</li>
               <li><strong>OpenAI (ChatGPT):</strong> Secondary synthesis option. <a href="https://platform.openai.com/api-keys" target="_blank" className="text-blue-600 underline font-bold hover:text-blue-800">Create Key Here</a>.</li>
               <li><strong>Hugging Face:</strong> Open-source synthesis engine. <a href="https://huggingface.co/settings/tokens" target="_blank" className="text-blue-600 underline font-bold hover:text-blue-800">Obtain your Inference API Token Here</a>.</li>
               <li><strong>Gmail SMTP:</strong> To send emails, you <strong>must</strong> use a <a href="https://myaccount.google.com/apppasswords" target="_blank" className="text-blue-600 underline font-bold hover:text-blue-800">Google App Password</a>.</li>
@@ -84,18 +84,18 @@ export default function InstructionsPage() {
             4. The Pitch Engine: Crafting the Message
           </h2>
           <div className="space-y-4 font-mono text-sm leading-relaxed">
-            <p>This is where your persona is built. The AI writes your emails and texts based <em>entirely</em> on the context you provide here.</p>
+            <p>This is where your persona is built. The engine drafts your emails and texts based <em>entirely</em> on the context you provide here.</p>
             
             <h3 className="font-bold uppercase mt-6 mb-2 text-lg">Input Fields & Impact</h3>
             <ul className="list-disc pl-6 space-y-4">
               <li><strong>Your Name & Role:</strong> Be specific. Instead of "Marketing Guy," use "Growth Consultant for HVAC Companies."</li>
               <li><strong>Credibility (The Hook):</strong> This is the most important field. Mention specific wins, such as "Helping 5 local firms double their bookings last quarter."</li>
               <li><strong>Core Offer:</strong> Be direct. "Photographer" or "Google Maps Optimization."</li>
-              <li><strong>AI Tone:</strong> Choose a style that matches your brand. "Punchy & Short" works best for SMS, while "Consultative" is better for high-ticket Email.</li>
+              <li><strong>Writing Tone:</strong> Choose a style that matches your brand. "Punchy & Short" works best for SMS, while "Consultative" is better for high-ticket Email.</li>
             </ul>
             
             <div className="mt-6 p-4 bg-black text-white border-2 border-black">
-              <strong>PRO-TIP:</strong> Better thoughts lead to better emails. If you provide vague inputs, the AI will produce vague emails. Spend 5 minutes deeply defining your offer and credibility; it will result in thousands of high-converting drafts.
+              <strong>PRO-TIP:</strong> Better thoughts lead to better emails. If you provide vague inputs, the engine will produce vague emails. Spend 5 minutes deeply defining your offer and credibility; it will result in thousands of high-converting drafts.
             </div>
           </div>
         </section>
@@ -118,7 +118,7 @@ export default function InstructionsPage() {
             <h3 className="font-bold uppercase mt-6 mb-2 text-lg">Email & SMS Settings</h3>
             <ul className="list-disc pl-6 space-y-2 mb-6">
               <li><strong>SMTP Server:</strong> For Gmail, use <code>smtp.gmail.com</code> and port <code>587</code>. You <strong>must</strong> use a "Google App Password," not your regular login password.</li>
-              <li><strong>SMS Mode:</strong> When toggled, the engine swaps to the Twilio gateway. The AI will automatically shorten its output to remain compatible with standard text message limits.</li>
+              <li><strong>SMS Mode:</strong> When toggled, the engine swaps to the Twilio gateway. The engine will automatically shorten its output to remain compatible with standard text message limits.</li>
             </ul>
 
             <h3 className="font-bold uppercase mt-6 mb-2 text-lg">The Local Vault (Sensitive Data Storage):</h3>
@@ -219,7 +219,7 @@ export default function InstructionsPage() {
               <li><strong>Outbound Logs:</strong> View a "Payload Intercept" of every message sent, including timestamp and target email.</li>
               <li><strong>Inbox Replies (IMAP Sync):</strong> Switch to the <strong>"Inbox Replies"</strong> tab and click <strong>"Sync IMAP"</strong> to stream replies from your leads directly into the app. This uses the credentials saved in your Security Vault to perform a secure handshake with your email provider.</li>
               <li><strong>UI Customization:</strong> Use the <strong>Palette</strong> selector in the header to switch between 15 different color themes (Cyan, Emerald, Amber, Rose, etc.) or the "Default" stealth mode.</li>
-              <li><strong>Optimization:</strong> Review your logs to see which "Core Offers" or "AI Tones" are getting the best response rates. If one campaign is "✅ SENT" and getting replies, save that persona as a template.</li>
+              <li><strong>Optimization:</strong> Review your logs to see which "Core Offers" or "Writing Tones" are getting the best response rates. If one campaign is "✅ SENT" and getting replies, save that persona as a template.</li>
             </ul>
           </div>
         </section>

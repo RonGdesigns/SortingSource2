@@ -128,7 +128,7 @@ export default function PaywallPage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <Check size={14} className="text-black shrink-0 mt-0.5" />
-                  <span>AI Pitch generation engine</span>
+                  <span>Audit-driven pitch generation</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check size={14} className="text-black shrink-0 mt-0.5" />
@@ -213,7 +213,7 @@ export default function PaywallPage() {
         <div className="border-4 border-black bg-[#F4F4F0] p-6 rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="font-mono text-xs uppercase text-neutral-600">
             <span className="font-bold text-black block mb-1">Bring-Your-Own-Key (BYOK) Architecture</span>
-            Allows Solo Operators to utilize their own direct Google Places and Gemini API limits.
+            Allows Solo Operators to utilize their own direct Google Places and Language Model (LLM) API limits.
           </div>
           <div className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">
             SECURE ENCRYPTION DETECTED

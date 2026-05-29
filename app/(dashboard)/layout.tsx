@@ -118,7 +118,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <ol className="space-y-3 text-[11px] text-neutral-600 leading-relaxed font-mono">
                   <li><strong className="text-black">1. Hunt:</strong> Use Target Hunter.</li>
                   <li><strong className="text-black">2. Extract:</strong> Use to extract data.</li>
-                  <li><strong className="text-black">3. Pitch:</strong> AI Email Generator.</li>
+                  <li><strong className="text-black">3. Pitch:</strong> Custom Pitch Writer.</li>
                   <li><strong className="text-black">4. Logs:</strong> Track replies.</li>
                 </ol>
               </div>

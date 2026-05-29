@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "../../lib/firebase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { UserPlus, Terminal, ArrowRight, ShieldAlert, Loader2 } from "lucide-react";
+import { UserPlus, Terminal, ArrowRight, ShieldAlert, Loader2, Chrome } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function SignupPage() {
@@ -15,6 +15,7 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -58,6 +59,34 @@ export default function SignupPage() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    setError("");
+    const provider = new GoogleAuthProvider();
+    try {
+      const userCredential = await signInWithPopup(auth, provider);
+      const user = userCredential.user;
+      
+      // Ensure Firestore user document exists
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+          email: user.email,
+          subscriptionStatus: "inactive",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+      }
+      router.push("/paywall");
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to register with Google.");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F4F4F0] text-black flex flex-col md:flex-row border-8 border-black font-sans selection:bg-black selection:text-white">
       {/* Left 40% - Asymmetrical Branding Sidebar */}
@@ -77,7 +106,7 @@ export default function SignupPage() {
             <span className="italic bg-white text-black px-2 py-0.5 select-none font-bold">Deployment.</span>
           </h1>
           <p className="font-mono text-xs text-neutral-400 max-w-xs leading-relaxed uppercase tracking-wider">
-            Establish your user credentials to allocate outbound compute resources and unlock search modules.
+            Establish your user credentials to allocate outbound compute resources and engage search modules.
           </p>
         </div>
 
@@ -102,7 +131,7 @@ export default function SignupPage() {
               <p className="text-xs text-neutral-500 font-mono uppercase tracking-wider mt-1">Deploy new operator node</p>
             </div>
 
-            <form onSubmit={handleSignup} className="space-y-6">
+            <form onSubmit={handleSignup} className="space-y-4">
               <div>
                 <label className="text-[10px] font-black uppercase font-mono tracking-widest text-neutral-600 block mb-2">EMAIL ADDRESS</label>
                 <input 
@@ -143,10 +172,10 @@ export default function SignupPage() {
                 </div>
               )}
 
-              <div className="pt-2">
+              <div className="pt-2 space-y-3">
                 <button 
                   type="submit" 
-                  disabled={isLoading}
+                  disabled={isLoading || googleLoading}
                   className="w-full py-4 bg-black text-white hover:bg-neutral-900 font-mono font-bold uppercase tracking-widest text-xs border-2 border-black flex items-center justify-center gap-2 transition-all active:translate-y-0.5 rounded-xl shadow-[4px_4px_0px_0px_rgba(200,200,200,1)] hover:shadow-none"
                 >
                   {isLoading ? (
@@ -156,6 +185,29 @@ export default function SignupPage() {
                   ) : (
                     <>
                       Register Node <ArrowRight size={16} />
+                    </>
+                  )}
+                </button>
+
+                <div className="flex items-center my-4">
+                  <div className="flex-grow border-t-2 border-neutral-200"></div>
+                  <span className="px-3 text-[10px] font-mono text-neutral-400 uppercase tracking-widest">or</span>
+                  <div className="flex-grow border-t-2 border-neutral-200"></div>
+                </div>
+
+                <button 
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  disabled={isLoading || googleLoading}
+                  className="w-full py-4 bg-white text-black hover:bg-neutral-50 font-mono font-bold uppercase tracking-widest text-xs border-2 border-black flex items-center justify-center gap-2 transition-all active:translate-y-0.5 rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none"
+                >
+                  {googleLoading ? (
+                    <>
+                      <Loader2 className="animate-spin" size={16} /> Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <Chrome size={16} /> Register with Google
                     </>
                   )}
                 </button>

@@ -162,11 +162,11 @@ export default function PitchPage() {
       return;
     }
     setIsProcessing(true);
-    addLog(`INITIATING AI SYNTHESIS...`);
+    addLog(`INITIATING PITCH GENERATION...`);
 
     const targets = leads.filter(l => selectedTargets.has(l.Name) && l.Name);
     if (targets.length === 0) {
-      addLog("ERROR: No valid targets selected for synthesis.");
+      addLog("ERROR: No valid targets selected for generation.");
       setIsProcessing(false);
       return;
     }
@@ -203,7 +203,7 @@ export default function PitchPage() {
           addLog(`LIVE: Draft ready for ${lead.Name}.`);
         } else {
           const err = await res.json();
-          addLog(`ERROR: Synthesis failed for ${lead.Name}: ${err.detail || 'Unknown Engine Error'}`);
+          addLog(`ERROR: Pitch generation failed for ${lead.Name}: ${err.detail || 'Unknown Engine Error'}`);
         }
       } catch (e) {
         addLog(`ERROR: Connection timeout for ${lead.Name}. Engine may be offline.`);
@@ -211,7 +211,7 @@ export default function PitchPage() {
     }
     setActiveDraftingLead(null);
     setIsProcessing(false);
-    addLog("SYNTHESIS COMPLETE.");
+    addLog("PITCH GENERATION COMPLETE.");
   };
 
   const generateSingleDraft = async (lead: any) => {
@@ -244,7 +244,7 @@ export default function PitchPage() {
         addLog(`LIVE: Draft ready for ${lead.Name}.`);
       } else {
         const err = await res.json();
-        addLog(`ERROR: Synthesis failed for ${lead.Name}: ${err.detail || 'Unknown Engine Error'}`);
+        addLog(`ERROR: Pitch generation failed for ${lead.Name}: ${err.detail || 'Unknown Engine Error'}`);
       }
     } catch (e) {
       addLog(`ERROR: Connection timeout for ${lead.Name}. Engine may be offline.`);
@@ -344,11 +344,11 @@ export default function PitchPage() {
       {confirmGenerate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4">
           <div className="border-4 border-white bg-black p-8 max-w-md w-full shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
-            <h3 className="text-xl font-black uppercase mb-4 text-white flex items-center gap-2"><Cpu className="text-blue-500" /> Confirm Synthesis</h3>
-            <p className="text-sm font-mono text-white/70 mb-8">You are about to run Mass Draft Creation. This will cost AI provider credits. Continue?</p>
+            <h3 className="text-xl font-black uppercase mb-4 text-white flex items-center gap-2"><Cpu className="text-blue-500" /> Confirm Generation</h3>
+            <p className="text-sm font-mono text-white/70 mb-8">You are about to run Mass Draft Creation. This will draw down your linked API provider credits. Continue?</p>
             <div className="flex gap-4">
               <button onClick={executeGenerate} className="flex-1 py-3 bg-white text-black font-bold uppercase hover:bg-neutral-300 transition-colors">
-                Yes, Start
+                Yes, Generate
               </button>
               <button onClick={() => { setConfirmGenerate(false); setIsProcessing(false); }} className="flex-1 py-3 bg-red-600 text-white font-bold uppercase hover:bg-red-700 transition-colors">
                 Cancel
@@ -432,7 +432,7 @@ export default function PitchPage() {
               </div>
 
               <div className="pt-2">
-                <label className="text-xs font-bold uppercase block mb-1">AI Tone</label>
+                <label className="text-xs font-bold uppercase block mb-1">Writing Tone</label>
                 <select value={toneSelection} onChange={e => setToneSelection(e.target.value)} className="w-full bg-transparent border-b-2 border-black p-2 outline-none font-mono text-sm">
                   {TONE_OPTIONS.map(opt => <option key={opt}>{opt}</option>)}
                 </select>

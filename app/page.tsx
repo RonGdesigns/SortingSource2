@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check, Crosshair, Terminal, Search, ShieldAlert, Cpu, Send } from "lucide-react";
+import { Check, Crosshair, Terminal, Search, ShieldAlert, Cpu, Send, Server } from "lucide-react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
@@ -29,18 +29,18 @@ const steps = [
   {
     id: "pitcher",
     title: "3. The Pitcher",
-    subtitle: "AI Synthesis Engine",
-    description: "Stop sending generic garbage. SortingSource routes audit data directly into our engine. It instantly synthesizes hyper-personalized cold emails, automatically highlighting specific website failures to build authority.",
+    subtitle: "Custom Pitch Writer",
+    description: "Stop blasting generic templates. SortingSource injects technical audit parameters directly into your drafts, generating high-conviction emails that highlight specific website vulnerabilities to capture attention immediately.",
     icon: <Cpu className="w-6 h-6 text-black" />,
-    terminalCode: "> INITIALIZING AI ENGINE...\n> INJECTING AUDIT DATA...\n> SYNTHESIZING PAYLOAD...\n> READY FOR DEPLOYMENT."
+    terminalCode: "> INITIALIZING DRAFT ENGINE...\n> INJECTING AUDIT PARAMETERS...\n> WRITING PITCH PAYLOAD...\n> DRAFT GENERATED."
   },
   {
     id: "dispatcher",
     title: "4. The Dispatcher",
-    subtitle: "Stealth-Mode Inbox Delivery",
+    subtitle: "Automated Inbox Delivery",
     description: "Execute your campaign directly from the dashboard. Connect via SMTP/IMAP to bulk-send. Our 'Anti-Spam Jitter' protocol injects randomized delays to protect your domain reputation.",
     icon: <Send className="w-6 h-6 text-black" />,
-    terminalCode: "> CONNECTING SMTP GATES...\n> ENGAGING ANTI-SPAM JITTER...\n> DEPLOYING MESSAGE 1/47...\n> SENT."
+    terminalCode: "> CONNECTING SMTP GATES...\n> ENGAGING ANTI-SPAM JITTER...\n> DEPLOYING MESSAGE 1/47...\n> DELIVERED."
   }
 ];
 
@@ -120,6 +120,46 @@ export default function SortingSourceLanding() {
   return (
     <div className="min-h-screen bg-[#F4F4F0] text-black font-sans selection:bg-black selection:text-white pb-20 relative">
 
+      {/* NAVIGATION BAR */}
+      <nav className="border-b-8 border-black bg-white py-4 px-6 md:px-12 flex justify-between items-center relative z-20">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-black text-white flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_0px_rgba(200,200,200,1)]">
+            <Server size={18} />
+          </div>
+          <span className="font-serif font-black tracking-tight text-xl uppercase leading-none">SortingSource</span>
+        </div>
+        <div className="flex gap-4 font-mono text-xs">
+          {!authChecked ? (
+            <div className="animate-pulse bg-neutral-200 h-8 w-20 border-2 border-black" />
+          ) : currentUser ? (
+            <button 
+              onClick={() => {
+                if (userStatus === "active") router.push("/dashboard");
+                else router.push("/paywall");
+              }}
+              className="px-4 py-2 border-2 border-black bg-black text-white hover:bg-white hover:text-black font-bold uppercase tracking-wider transition-all"
+            >
+              Go to Dashboard
+            </button>
+          ) : (
+            <>
+              <button 
+                onClick={() => router.push("/login")}
+                className="px-4 py-2 border-2 border-transparent hover:border-black font-bold uppercase tracking-wider transition-all"
+              >
+                Log In
+              </button>
+              <button 
+                onClick={() => router.push("/signup")}
+                className="px-4 py-2 border-2 border-black bg-black text-white hover:bg-white hover:text-black font-bold uppercase tracking-wider transition-all shadow-[2px_2px_0px_0px_rgba(200,200,200,1)] hover:shadow-none"
+              >
+                Sign Up
+              </button>
+            </>
+          )}
+        </div>
+      </nav>
+
       {/* 1. HERO SECTION (Asymmetrical & Brutalist) */}
       <header className="relative z-10 flex flex-col md:flex-row min-h-[85vh] border-b-8 border-black">
         {/* Left 60% */}
@@ -146,35 +186,54 @@ export default function SortingSourceLanding() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
             className="max-w-xl mb-12 text-lg font-mono leading-relaxed text-neutral-800"
           >
-            Don't build your agency on fragile scraping tools. SortingSource is your dedicated pipeline infrastructure. Hunt leads, extract private data, and deploy campaigns at scale.
+            Build a direct, self-owned outbound pipeline. No credit markup, no middleman databases, no generic AI templates. Just raw data extraction and cold outreach that actually lands in the inbox.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="flex flex-col gap-6 sm:flex-row"
+            className="flex flex-col gap-4 sm:flex-row"
           >
-            <button
-              onClick={() => {
-                if (!authChecked) return;
-                if (!currentUser) {
-                  router.push("/signup");
-                } else if (userStatus === "active") {
-                  router.push("/dashboard");
-                } else {
-                  router.push("/paywall");
-                }
-              }}
-              className="px-8 py-4 font-bold text-white transition-transform transform hover:-translate-y-1 bg-[#1A1A1A] border-4 border-[#1A1A1A] shadow-[6px_6px_0px_0px_rgba(200,200,200,1)] flex items-center justify-center gap-3 font-mono uppercase tracking-widest text-sm"
-            >
-              <Crosshair size={18} />
-              Deploy Infrastructure
-            </button>
-            <button
-              onClick={() => scrollTo('engine')}
-              className="px-8 py-4 font-bold transition-transform transform hover:-translate-y-1 border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-black font-mono uppercase tracking-widest text-sm"
-            >
-              Examine The Engine
-            </button>
+            {!authChecked ? (
+              <div className="animate-pulse bg-neutral-200 h-14 w-48 border-4 border-black" />
+            ) : currentUser ? (
+              <>
+                <button
+                  onClick={() => {
+                    if (userStatus === "active") {
+                      router.push("/dashboard");
+                    } else {
+                      router.push("/paywall");
+                    }
+                  }}
+                  className="px-8 py-4 font-bold text-white transition-transform transform hover:-translate-y-1 bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(200,200,200,1)] flex items-center justify-center gap-3 font-mono uppercase tracking-widest text-sm"
+                >
+                  <Crosshair size={18} />
+                  {userStatus === "active" ? "Go to Dashboard" : "Resolve Paywall"}
+                </button>
+                <button
+                  onClick={() => scrollTo('engine')}
+                  className="px-8 py-4 font-bold transition-transform transform hover:-translate-y-1 border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-black font-mono uppercase tracking-widest text-sm"
+                >
+                  Examine The Engine
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => router.push("/signup")}
+                  className="px-8 py-4 font-bold text-white transition-transform transform hover:-translate-y-1 bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(200,200,200,1)] flex items-center justify-center gap-3 font-mono uppercase tracking-widest text-sm"
+                >
+                  <Crosshair size={18} />
+                  Sign Up & Start Outbound
+                </button>
+                <button
+                  onClick={() => router.push("/login")}
+                  className="px-8 py-4 font-bold transition-transform transform hover:-translate-y-1 border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-black font-mono uppercase tracking-widest text-sm"
+                >
+                  Log In
+                </button>
+              </>
+            )}
           </motion.div>
         </div>
 
