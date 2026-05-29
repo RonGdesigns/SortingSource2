@@ -20,17 +20,15 @@ if os.environ.get("RENDER"):
     APPDATA_DIR = "/var/data"
     if not os.path.exists(APPDATA_DIR):
         APPDATA_DIR = "/app/data"
+    # On Render, we use the default baked-in Playwright browser path from the Docker image
 else:
     APPDATA_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SortingSource')
-
-BROWSER_DIR = os.path.join(APPDATA_DIR, 'browsers')
-
-if not os.path.exists(APPDATA_DIR):
-    os.makedirs(APPDATA_DIR, exist_ok=True)
-if not os.path.exists(BROWSER_DIR):
-    os.makedirs(BROWSER_DIR, exist_ok=True)
-
-os.environ["PLAYWRIGHT_BROWSERS_PATH"] = BROWSER_DIR
+    BROWSER_DIR = os.path.join(APPDATA_DIR, 'browsers')
+    if not os.path.exists(APPDATA_DIR):
+        os.makedirs(APPDATA_DIR, exist_ok=True)
+    if not os.path.exists(BROWSER_DIR):
+        os.makedirs(BROWSER_DIR, exist_ok=True)
+    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = BROWSER_DIR
 
 # ==========================================
 # 2. THE PYINSTALLER PATH FIX
@@ -147,9 +145,9 @@ def ensure_playwright_browsers():
     
     # 1. Define the path
     if os.environ.get("RENDER"):
-        _appdata = "/var/data" if os.path.exists("/var/data") else "/app/data"
-    else:
-        _appdata = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SortingSource')
+        return # Skip this entirely on Render since it's baked into the Docker image
+        
+    _appdata = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SortingSource')
     _browser_dir = os.path.join(_appdata, 'browsers')
     os.environ["PLAYWRIGHT_BROWSERS_PATH"] = _browser_dir
     
