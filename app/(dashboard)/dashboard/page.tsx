@@ -294,8 +294,11 @@ export default function Dashboard() {
                 onBlur={e => (e.target.style.borderBottomColor = "var(--color-night)")} />
             </div>
             <div>
-              <label className="metro-label" style={{ color: "rgba(26,26,31,0.5)", display: "block", marginBottom: 8 }}>Limit</label>
-              <input id="hunt-limit" type="number" min="1" style={inputStyle} value={maxResults} onChange={e => setMaxResults(e.target.value)}
+              <label className="metro-label" style={{ color: "rgba(26,26,31,0.5)", display: "block", marginBottom: 8 }}>Limit (Max 60)</label>
+              <input id="hunt-limit" type="number" min="1" max="60" style={inputStyle} value={maxResults} onChange={e => {
+                if (parseInt(e.target.value) > 60) setMaxResults("60");
+                else setMaxResults(e.target.value);
+              }}
                 onFocus={e => (e.target.style.borderBottomColor = "var(--color-transit-red)")}
                 onBlur={e => (e.target.style.borderBottomColor = "var(--color-night)")} />
             </div>

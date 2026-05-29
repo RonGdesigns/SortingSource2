@@ -443,7 +443,9 @@ async def execute_hunt(request: HuntRequest):
             print(">>> [LOG] Skip Known is INACTIVE. Full refresh mode.")
 
         # --- 3. GOOGLE PLACES FETCHING (Power Search Logic) ---
-        fetch_goal = 40 if request.power_search else request.max_results
+        # Hard lock max results to 60 due to API pagination limits and performance constraints
+        safe_max = min(60, request.max_results)
+        fetch_goal = 40 if request.power_search else safe_max
         raw_pool = []
         next_token = None
         
@@ -507,7 +509,7 @@ async def execute_hunt(request: HuntRequest):
             # Prioritize leads where an email was actually found
             results.sort(key=lambda x: 0 if x["audit"]["Email"] and x["audit"]["Email"] != "N/A" else 1)
         
-        final_leads = results[:request.max_results]
+        final_leads = results[:safe_max]
 
         save_data = []
         for item in final_leads:
