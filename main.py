@@ -547,6 +547,8 @@ async def execute_hunt(request: HuntRequest):
         
         return {"status": "success", "leads_found": len(save_data)}
 
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
         print(f"!!! CRITICAL FAILURE:\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=traceback.format_exc())
