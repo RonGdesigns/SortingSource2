@@ -78,7 +78,7 @@ export default function PrivacyPage() {
           <div style={{ padding: "48px" }} className="md:border-l-5 md:border-[var(--color-night)]">
             <h2 className="metro-display" style={{ fontSize: "1.5rem", marginBottom: 16 }}>API Key Transmission</h2>
             <p style={{ lineHeight: 1.8, fontSize: "1rem", maxWidth: 680, color: "rgba(26,26,31,0.85)" }}>
-              Your integrated API keys (Google Places, OpenAI, Gemini, Twilio) and SMTP/IMAP credentials are encrypted within your Local Vault. When the engine executes, these keys communicate directly with their respective third-party providers. SortingSource master servers never see, touch, or log your private credentials.
+              For standard accounts, only your custom AI credentials (OpenAI and Hugging Face) are processed locally through your Local Vault to communicate directly with third-party providers. In full Enterprise Custom Deployments (the complete BYOK model), all integrated credentials (including Google Places, Gemini, Twilio, and SMTP details) are similarly sandboxed locally on your dedicated instance and are never logged, stored, or processed by SortingSource master servers.
             </p>
           </div>
         </div>

@@ -59,12 +59,12 @@ export default function TermsPage() {
         <div className="grid grid-cols-1 md:grid-cols-[1fr_3fr] border-b-5 border-[var(--color-night)]">
           <div className="field-red" style={{ padding: "32px 48px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
             <span className="metro-display" style={{ fontSize: "2rem", color: "var(--color-canvas)" }}>01</span>
-            <span className="metro-sub" style={{ fontSize: "0.75rem", color: "var(--color-canvas)", letterSpacing: "0.2em" }}>BYOK</span>
+            <span className="metro-sub" style={{ fontSize: "0.75rem", color: "var(--color-canvas)", letterSpacing: "0.2em" }}>KEYS</span>
           </div>
           <div style={{ padding: "48px" }} className="md:border-l-5 md:border-[var(--color-night)]">
-            <h2 className="metro-display" style={{ fontSize: "1.5rem", marginBottom: 16 }}>BYOK (Bring Your Own Key) Doctrine</h2>
+            <h2 className="metro-display" style={{ fontSize: "1.5rem", marginBottom: 16 }}>API Key & Hosted Hybrid Model</h2>
             <p style={{ lineHeight: 1.8, fontSize: "1rem", maxWidth: 680, color: "rgba(26,26,31,0.85)" }}>
-              SortingSource is a standalone architecture. You are acquiring the engine, not the fuel. Users must supply their own active accounts, billing setup, and API limits for Google Places (New), OpenAI API, Gemini API, Twilio messaging services, and SMTP/IMAP gateways.
+              By default, SortingSource operates as a hosted hybrid platform. Users only need to supply their own API keys for custom AI generation (OpenAI and Hugging Face). Full BYOK (Bring Your Own Key) architecture—allowing the integration of custom limits for Google Places, Gemini, Twilio, and SMTP gateways—is exclusively supported and configured under the Enterprise Custom Deployment plan.
             </p>
           </div>
         </div>
