@@ -16,13 +16,19 @@ if os.path.exists(env_path):
 # 1. THE ULTIMATE PLAYWRIGHT PATH FIX
 # ==========================================
 # Force Playwright to store the browser in your permanent AppData folder
-APPDATA_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SortingSource')
+if os.environ.get("RENDER"):
+    APPDATA_DIR = "/var/data"
+    if not os.path.exists(APPDATA_DIR):
+        APPDATA_DIR = "/app/data"
+else:
+    APPDATA_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SortingSource')
+
 BROWSER_DIR = os.path.join(APPDATA_DIR, 'browsers')
 
 if not os.path.exists(APPDATA_DIR):
-    os.makedirs(APPDATA_DIR)
+    os.makedirs(APPDATA_DIR, exist_ok=True)
 if not os.path.exists(BROWSER_DIR):
-    os.makedirs(BROWSER_DIR)
+    os.makedirs(BROWSER_DIR, exist_ok=True)
 
 os.environ["PLAYWRIGHT_BROWSERS_PATH"] = BROWSER_DIR
 
@@ -140,13 +146,16 @@ def ensure_playwright_browsers():
     import os
     
     # 1. Define the path
-    APPDATA_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SortingSource')
-    BROWSER_DIR = os.path.join(APPDATA_DIR, 'browsers')
-    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = BROWSER_DIR
+    if os.environ.get("RENDER"):
+        _appdata = "/var/data" if os.path.exists("/var/data") else "/app/data"
+    else:
+        _appdata = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SortingSource')
+    _browser_dir = os.path.join(_appdata, 'browsers')
+    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = _browser_dir
     
     # 2. Check if the Chromium folder already exists
     # We look for the 'chromium' folder inside the browser directory
-    if os.path.exists(BROWSER_DIR) and len(os.listdir(BROWSER_DIR)) > 0:
+    if os.path.exists(_browser_dir) and len(os.listdir(_browser_dir)) > 0:
         print(f">>> BROWSER DETECTED: Skipping download check.")
         return
 
