@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Engagement | SortingSource</title>
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    <style>
+        :root { --bg: #050505; --text: #888; --accent: #2563eb; --mono: 'Fira Code', 'Courier New', monospace; }
+        
+        /* Global Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: var(--mono); 
+            line-height: 1.8; 
+            overflow-x: hidden; 
+            /* FLEXBOX STICKY FOOTER: Stacks elements and allows the container to push the footer down */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* FIXED VIEWPORT CANVAS: Locks terms.png to the screen while text scrolls */
+        body::before {
+            content: '';
+            position: fixed; 
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh; 
+            background-image: linear-gradient(to bottom, rgba(5, 5, 5, 0.4) 0%, rgba(5, 5, 5, 0.95) 100%), url('terms.png');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover; 
+            z-index: 0; 
+            pointer-events: none;
+        }
+
+        /* TEXT CONTAINER: Pulls text safely above the image and acts as the flex-spring */
+        .container { 
+            padding: 4rem 2rem; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            position: relative; 
+            z-index: 2; 
+            flex-grow: 1; /* CRITICAL: Forces container to expand and crush the footer to the bottom */
+            width: 100%;
+        }
+
+        h1, h2 { color: #fff; text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        /* Removed the dashed border so it doesn't slice the background photo */
+        h1 { margin-bottom: 2rem; font-size: 2.5rem; }
+        h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        
+        .back-btn { display: inline-block; margin-bottom: 2rem; color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+        .back-btn:hover { color: #fff; text-shadow: 0 0 10px rgba(37, 99, 235, 0.5); }
+        
+        /* GLASSMORPHISM: Keeps text readable as it scrolls over terms.png */
+        .clause { 
+            margin-bottom: 3rem; 
+            background: rgba(10, 10, 10, 0.65); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* --- SYSTEM FOOTER (BULLETPROOF VERSION) --- */
+        .system-footer {
+            border-top: 1px dashed #222;
+            padding: 3rem 2rem;
+            margin-top: 2rem;
+            font-size: 0.85rem;
+            color: #888888; 
+            background: #050505;
+            position: relative; /* Pulls footer above the background */
+            z-index: 10;        
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        .company-name {
+            color: #ccc;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .rights {
+            font-family: 'Fira Code', 'Courier New', monospace; 
+            font-size: 0.7rem;
+            color: #555;
+        }
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+        .footer-links a {
+            color: #888888; 
+            font-family: 'Fira Code', 'Courier New', monospace; 
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: color 0.3s ease;
+        }
+        .footer-links a:hover {
+            color: #2563eb;
+            text-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+        }
+
+        /* --- MOBILE OVERRIDE PROTOCOLS --- */
+        @media (max-width: 768px) {
+            body, html { overflow-x: hidden; width: 100%; }
+            .container { padding: 3rem 1.5rem; } 
+            h1 { font-size: 1.8rem; }
+            h2 { font-size: 1.2rem; }
+            p { font-size: 0.95rem; }
+            .clause { padding: 1.5rem; }
+            
+            .system-footer { padding: 2rem 1rem; }
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 2rem; 
+            }
+            .footer-links {
+                flex-wrap: wrap; 
+                justify-content: center; 
+                gap: 1rem 1.5rem; 
+            }
+        }
+    </style>
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body>
+    
+    <div class="container">
+        <a href="index.html" class="back-btn">&lt;_ RETURN TO MAIN SYSTEM</a>
+        <h1>Terms of Engagement</h1>
+        
+        <div class="clause">
+            <h2>> 01. BYOK (Bring Your Own Key) Doctrine</h2>
+            <p>SortingSource is a standalone architecture. You are acquiring the engine, not the fuel. Users must supply their own active accounts and API limits for Google Places, OpenAI, Gemini, Twilio, and SMTP gateways.</p>
+        </div>
+
+        <div class="clause">
+            <h2>> 02. Legal Accountability & Compliance</h2>
+            <p>By executing the Pitch Engine, you accept full legal responsibility for your outreach. SortingSource LLC is not liable for domain blacklisting, rate limits, or violations of CAN-SPAM, TCPA, or third-party API Terms of Service. Misuse of the engine (e.g., ignoring opt-outs, harassment) is strictly prohibited.</p>
+        </div>
+    </div>
+
+    <footer class="system-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="company-name">© 2026 Sorting Source LLC.</span>
+                <span class="rights">ALL SYSTEMS OPERATIONAL // ALL RIGHTS RESERVED.</span>
+                <span class="rights" style="margin-top: 0.5rem; color: #666;">
+                    System Architecture by <a href="https://irondigitalmi.com" target="_blank" style="color: #2563eb; text-decoration: none; font-weight: bold; text-shadow: 0 0 8px rgba(37, 99, 235, 0.4);">Irondigitalmi.com</a>
+                </span>
+            </div>
+            <div class="footer-links">
+                <a href="how-it-works.html" style="color: #0dbd48;">How It Works</a>
+                <a href="architecture.html" style="color: #e40f08;">System Architecture</a>
+                <a href="demo.html" style="color: #2563eb;">Visual Intel (Demo)</a>
+                <a href="models.html" style="color: #8b5cf6;">Synthesis Models</a>
+                <a href="privacy.html">Privacy Protocol</a>
+                <a href="terms.html">Terms of Engagement</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

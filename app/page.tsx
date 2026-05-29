@@ -6,6 +6,7 @@ import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 // --- DATA: 4-STEP ENGINE ---
 const steps = [
@@ -830,6 +831,8 @@ export default function SortingSourceLanding() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "24px",
         }}
       >
         <span
@@ -838,6 +841,22 @@ export default function SortingSourceLanding() {
         >
           SortingSource
         </span>
+        <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
+          <Link
+            href="/privacy"
+            className="metro-label"
+            style={{ color: "rgba(237,232,220,0.65)", textDecoration: "none", fontSize: "0.625rem", letterSpacing: "0.2em", transition: "color 0.15s" }}
+          >
+            Privacy Protocol
+          </Link>
+          <Link
+            href="/terms"
+            className="metro-label"
+            style={{ color: "rgba(237,232,220,0.65)", textDecoration: "none", fontSize: "0.625rem", letterSpacing: "0.2em", transition: "color 0.15s" }}
+          >
+            Terms of Engagement
+          </Link>
+        </div>
         <span
           className="metro-label"
           style={{ color: "rgba(237,232,220,0.45)", letterSpacing: "0.3em" }}

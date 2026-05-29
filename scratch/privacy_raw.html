@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Protocol | SortingSource</title>
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    <style>
+        :root { --bg: #050505; --text: #888; --accent: #2563eb; --mono: 'Fira Code', 'Courier New', monospace; }
+        
+        /* Global Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: var(--mono); 
+            line-height: 1.8; 
+            overflow-x: hidden; 
+            min-height: 100vh;
+            display: flex;       
+            flex-direction: column; 
+        }
+
+       
+        /* THE NEW VIDEO BACKGROUND LAYER */
+        .bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover; /* Ensures the video fills the screen without stretching */
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* THE CINEMATIC SHADOW OVERLAY */
+        /* This sits on top of the video to darken it so your text remains readable */
+        body::before {
+            content: '';
+            position: fixed; 
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh; 
+            background: linear-gradient(to bottom, rgba(5, 5, 5, 0.4) 0%, rgba(5, 5, 5, 0.95) 100%);
+            z-index: 1; /* Sits exactly between the video (0) and your container (2) */
+            pointer-events: none;
+        }
+
+       /* TEXT CONTAINER: Pulls your text safely above the image */
+        .container { 
+            padding: 4rem 2rem; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            position: relative; 
+            z-index: 2; 
+            flex-grow: 1;           /* NEW: Forces container to expand and push footer down */
+            width: 100%;
+        }
+
+        h1, h2 { color: #fff; text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        /* REMOVED the dashed border so it no longer slices through the image */
+        h1 { margin-bottom: 2rem; font-size: 2.5rem; }
+        h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        
+        .back-btn { display: inline-block; margin-bottom: 2rem; color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+        .back-btn:hover { color: #fff; text-shadow: 0 0 10px rgba(37, 99, 235, 0.5); }
+        
+        /* GLASSMORPHISM: Keeps text readable as it scrolls over the background photo */
+        .clause { 
+            margin-bottom: 3rem; 
+            background: rgba(10, 10, 10, 0.65); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* --- SYSTEM FOOTER (BULLETPROOF VERSION) --- */
+        .system-footer {
+            border-top: 1px dashed #222;
+            padding: 3rem 2rem;
+            margin-top: 2rem;
+            font-size: 0.85rem;
+            color: #888888; 
+            background: #050505;
+            position: relative; /* Pulls footer above the background */
+            z-index: 10;        
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        .company-name {
+            color: #ccc;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .rights {
+            font-family: 'Fira Code', 'Courier New', monospace; 
+            font-size: 0.7rem;
+            color: #555;
+        }
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+        .footer-links a {
+            color: #888888; 
+            font-family: 'Fira Code', 'Courier New', monospace; 
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: color 0.3s ease;
+        }
+        .footer-links a:hover {
+            color: #2563eb;
+            text-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+        }
+
+        /* --- MOBILE OVERRIDE PROTOCOLS --- */
+        @media (max-width: 768px) {
+            body, html { overflow-x: hidden; width: 100%; }
+            .container { padding: 3rem 1.5rem; } 
+            h1 { font-size: 1.8rem; }
+            h2 { font-size: 1.2rem; }
+            p { font-size: 0.95rem; }
+            .clause { padding: 1.5rem; }
+            
+            .system-footer { padding: 2rem 1rem; }
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 2rem; 
+            }
+            .footer-links {
+                flex-wrap: wrap; 
+                justify-content: center; 
+                gap: 1rem 1.5rem; 
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <video autoplay muted playsinline class="bg-video">
+        <source src="privacy.mp4" type="video/mp4">
+    </video>
+
+    <div class="container">
+        <a href="index.html" class="back-btn">&lt;_ RETURN TO MAIN SYSTEM</a>
+        <h1>Privacy Protocol v2.1</h1>
+        
+        <div class="clause">
+            <h2>> 01. The Local Vault Architecture</h2>
+            <p>SortingSource operates strictly as a local-first software engine. We do not harbor, transmit, or observe your generated leads, email copy, or reply logs on centralized servers. All data is written exclusively to your local hardware via the outbound_crm.db and localStorage.</p>
+        </div>
+
+        <div class="clause">
+            <h2>> 02. API Key Transmission</h2>
+            <p>Your integrated API keys (Google, OpenAI, Hugging Face, Twilio) and SMTP/IMAP credentials are encrypted within your Local Vault. When the engine executes, these keys communicate directly with their respective third-party providers. SortingSource master servers never see, touch, or log your private credentials.</p>
+        </div>
+    </div>
+
+    <footer class="system-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="company-name">© 2026 Sorting Source LLC.</span>
+                <span class="rights">ALL SYSTEMS OPERATIONAL // ALL RIGHTS RESERVED.</span>
+                <span class="rights" style="margin-top: 0.5rem; color: #666;">
+                    System Architecture by <a href="https://irondigitalmi.com" target="_blank" style="color: #2563eb; text-decoration: none; font-weight: bold; text-shadow: 0 0 8px rgba(37, 99, 235, 0.4);">Irondigitalmi.com</a>
+                </span>
+            </div>
+            <div class="footer-links">
+                <a href="how-it-works.html" style="color: #0dbd48;">How It Works</a>
+                <a href="architecture.html" style="color: #e40f08;">System Architecture</a>
+                <a href="demo.html" style="color: #2563eb;">Visual Intel (Demo)</a>
+                <a href="models.html" style="color: #8b5cf6;">Synthesis Models</a>
+                <a href="privacy.html">Privacy Protocol</a>
+                <a href="terms.html">Terms of Engagement</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
