@@ -20,6 +20,8 @@ if os.environ.get("RENDER"):
     APPDATA_DIR = "/var/data"
     if not os.path.exists(APPDATA_DIR):
         APPDATA_DIR = "/app/data"
+    if not os.path.exists(APPDATA_DIR):
+        os.makedirs(APPDATA_DIR, exist_ok=True)
     # On Render, we use the default baked-in Playwright browser path from the Docker image
 else:
     APPDATA_DIR = os.path.join(os.environ.get('APPDATA', os.path.expanduser('~')), 'SortingSource')
