@@ -1,8 +1,7 @@
 import requests
 
-# Paste your Gemini Key here
 API_KEY = "YOUR_GEMINI_KEY_HERE"
-url = f"https://generativelanguage.googleapis.com/v1/models?key=AIzaSyBs7Nv_Ln-83jv4-bvR7w8d2EDtRaNz5g8"
+url = f"https://generativelanguage.googleapis.com/v1/models?key={API_KEY}"
 
 try:
     res = requests.get(url)
