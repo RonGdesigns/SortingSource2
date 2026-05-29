@@ -90,6 +90,7 @@ export default function Dashboard() {
   const [useBlacklist, setUseBlacklist] = useState(true);
   const [rememberKeys, setRememberKeys] = useState(false);
   const [powerSearch, setPowerSearch] = useState(false);
+  const [useLocalEngine, setUseLocalEngine] = useState(false);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [validationError, setValidationError] = useState("");
@@ -99,7 +100,8 @@ export default function Dashboard() {
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
   const [leadToDelete, setLeadToDelete] = useState<any>(null);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const CLOUD_API_URL = process.env.NEXT_PUBLIC_API_URL || "https://sorting-source-backend.onrender.com";
+  const API_URL = useLocalEngine ? "http://localhost:8000" : CLOUD_API_URL;
 
   useEffect(() => {
     let activeCampaign = campaignName;
@@ -117,6 +119,7 @@ export default function Dashboard() {
       if (parsed.keepExisting !== undefined) setKeepExisting(parsed.keepExisting);
       if (parsed.useBlacklist !== undefined) setUseBlacklist(parsed.useBlacklist);
       if (parsed.powerSearch !== undefined) setPowerSearch(parsed.powerSearch);
+      if (parsed.useLocalEngine !== undefined) setUseLocalEngine(parsed.useLocalEngine);
       if (parsed.campaignName) { setCampaignName(parsed.campaignName); activeCampaign = parsed.campaignName; }
     }
     fetch(`${API_URL}/api/config/api-key`)
@@ -182,7 +185,7 @@ export default function Dashboard() {
   };
 
   const saveSearchPreset = () => {
-    localStorage.setItem("ss_search_preset", JSON.stringify({ niche, city, region, zipCode, intlPostal, country, maxResults, campaignName, international, keepExisting, useBlacklist, powerSearch }));
+    localStorage.setItem("ss_search_preset", JSON.stringify({ niche, city, region, zipCode, intlPostal, country, maxResults, campaignName, international, keepExisting, useBlacklist, powerSearch, useLocalEngine }));
     setStatusMessage("Search configuration saved.");
   };
 
@@ -257,7 +260,7 @@ export default function Dashboard() {
           style={{ padding: "8px 16px", display: "flex", alignItems: "center", gap: 8 }}
         >
           <Activity size={14} color="var(--color-teal)" style={{ animation: "pulse 2s infinite" }} />
-          <span className="metro-label" style={{ color: "var(--color-teal)" }}>Engine Online</span>
+          <span className="metro-label" style={{ color: "var(--color-teal)" }}>{useLocalEngine ? "Local Engine Online" : "Cloud Engine Online"}</span>
         </div>
       </header>
 
@@ -321,6 +324,7 @@ export default function Dashboard() {
             <MetroToggle label="Accumulate" active={keepExisting} onClick={() => setKeepExisting(!keepExisting)} />
             <MetroToggle label="Skip Known" active={useBlacklist} onClick={() => setUseBlacklist(!useBlacklist)} />
             <MetroToggle label="Save Key" active={rememberKeys} onClick={() => setRememberKeys(!rememberKeys)} />
+            <MetroToggle label="Local Engine" active={useLocalEngine} onClick={() => setUseLocalEngine(!useLocalEngine)} />
           </div>
 
           {/* Campaign + actions */}
@@ -464,11 +468,25 @@ export default function Dashboard() {
                     </a>
                   </td>
                   <td>
-                    <span className="metro-display" style={{ fontSize: "0.875rem" }}>{l.Rating}</span>
+                    <div className="metro-display" style={{ fontSize: "0.875rem" }}>
+                      {l.Rating !== "N/A" ? l.Rating : "—"}
+                      {l.Reviews > 0 && <span style={{ fontSize: "0.65rem", color: "rgba(26,26,31,0.5)", marginLeft: 4 }}>({l.Reviews})</span>}
+                    </div>
                   </td>
                   <td>
-                    <div className="metro-display" style={{ fontSize: "0.8rem", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.Email}</div>
-                    <div style={{ fontFamily: "var(--font-body)", fontSize: "0.75rem", color: "rgba(26,26,31,0.5)" }}>{l.Phone}</div>
+                    {l.Email !== "N/A" ? (
+                      <div className="metro-display" style={{ fontSize: "0.8rem", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.Email}</div>
+                    ) : null}
+                    
+                    {l.Phone !== "N/A" ? (
+                      <a href={`tel:${l.Phone}`} style={{ fontFamily: "var(--font-body)", fontSize: "0.75rem", color: "var(--color-teal)", textDecoration: "none", display: "block", marginTop: l.Email !== "N/A" ? 4 : 0 }}>
+                        {l.Phone}
+                      </a>
+                    ) : null}
+
+                    {l.Email === "N/A" && l.Phone === "N/A" && (
+                      <span className="metro-label" style={{ color: "rgba(26,26,31,0.3)" }}>No Contact Info</span>
+                    )}
                   </td>
                   <td>
                     <div style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
