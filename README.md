@@ -42,9 +42,13 @@ This application has been upgraded with Firebase Auth, Cloud Firestore subscript
 ### 1. Firebase Project Setup
 
 1. Create a Firebase Project in the [Firebase Console](https://console.firebase.google.com/).
-2. Enable **Email/Password** authentication under *Authentication > Sign-in method*.
+2. Enable **Email/Password** and **Google** authentication providers under *Authentication > Sign-in method*.
 3. Enable **Cloud Firestore** and configure the database location.
 4. Go to *Project Settings > Service Accounts*, click **Generate new private key**, and extract the project details.
+5. Under *Authentication > Settings > Authorized domains*, click **Add Domain** and authorize your deployment domains:
+   - `sortingsource.com`
+   - `www.sortingsource.com`
+   - `sorting-source-bl8rmmdzp-rongdesigns-projects.vercel.app` (or any custom Vercel preview domain)
 
 ### 2. Environment Variables (.env.local)
 
