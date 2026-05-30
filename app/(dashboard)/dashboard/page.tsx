@@ -5,17 +5,17 @@ import {
   Loader2, Activity, Download, ArrowUpDown, Trash2, Target, Zap, Save, AlertTriangle
 } from "lucide-react";
 
-function MetroToggle({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function MetroToggle({ label, active, onClick, disabled }: { label: string; active: boolean; onClick: () => void; disabled?: boolean }) {
   return (
     <button
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
       style={{
         display: "flex",
         alignItems: "center",
         gap: 8,
         background: "none",
         border: "none",
-        cursor: "pointer",
+        cursor: disabled ? "not-allowed" : "pointer",
         padding: 0,
         fontFamily: "var(--font-display)",
         fontWeight: 900,
@@ -23,6 +23,7 @@ function MetroToggle({ label, active, onClick }: { label: string; active: boolea
         textTransform: "uppercase",
         letterSpacing: "0.2em",
         color: active ? "var(--color-night)" : "rgba(26,26,31,0.45)",
+        opacity: disabled ? 0.6 : 1,
         transition: "color 0.15s",
       }}
     >
@@ -92,6 +93,7 @@ export default function Dashboard() {
   const [powerSearch, setPowerSearch] = useState(false);
   const [useLocalEngine, setUseLocalEngine] = useState(false);
   const [localEngineStatus, setLocalEngineStatus] = useState<"unknown" | "online" | "offline">("unknown");
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [validationError, setValidationError] = useState("");
@@ -131,6 +133,23 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    const mobileCheck = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const desktop = !mobileCheck;
+    setIsDesktop(desktop);
+    if (desktop) {
+      setUseLocalEngine(true);
+      fetch("http://localhost:8000/health", { signal: AbortSignal.timeout(1500) })
+        .then(res => {
+          if (res.ok) setLocalEngineStatus("online");
+          else setLocalEngineStatus("offline");
+        })
+        .catch(() => setLocalEngineStatus("offline"));
+    } else {
+      setUseLocalEngine(false);
+    }
+  }, []);
+
+  useEffect(() => {
     let activeCampaign = campaignName;
     const savedConfig = localStorage.getItem("ss_search_preset");
     if (savedConfig) {
@@ -146,7 +165,6 @@ export default function Dashboard() {
       if (parsed.keepExisting !== undefined) setKeepExisting(parsed.keepExisting);
       if (parsed.useBlacklist !== undefined) setUseBlacklist(parsed.useBlacklist);
       if (parsed.powerSearch !== undefined) setPowerSearch(parsed.powerSearch);
-      if (parsed.useLocalEngine !== undefined) setUseLocalEngine(parsed.useLocalEngine);
       if (parsed.campaignName) { setCampaignName(parsed.campaignName); activeCampaign = parsed.campaignName; }
     }
     fetch(`${API_URL}/api/config/api-key`)
@@ -175,6 +193,18 @@ export default function Dashboard() {
 
   const executeHunt = async () => {
     if (!niche) { setValidationError("Missing Niche keyword for the hunt."); return; }
+    
+    if (useLocalEngine) {
+      setIsLoading(true);
+      setStatusMessage("Pinging FAST Search engine...");
+      const alive = await checkLocalEngine();
+      if (!alive) {
+        setIsLoading(false);
+        setValidationError("FAST Search is offline. Please start the local engine (double-click 'install_local_engine.bat' on your PC) before executing search.");
+        return;
+      }
+    }
+
     setIsLoading(true); setStatusMessage("Acquiring targets...");
     const placesVersion = localStorage.getItem("places_version") || "v1";
     try {
@@ -359,7 +389,13 @@ export default function Dashboard() {
             <MetroToggle label="Accumulate" active={keepExisting} onClick={() => setKeepExisting(!keepExisting)} />
             <MetroToggle label="Skip Known" active={useBlacklist} onClick={() => setUseBlacklist(!useBlacklist)} />
             <MetroToggle label="Save Key" active={rememberKeys} onClick={() => setRememberKeys(!rememberKeys)} />
-            <MetroToggle label="FAST Search (PC Only)" active={useLocalEngine} onClick={handleLocalEngineToggle} />
+            {isDesktop === true ? (
+              <MetroToggle label="FAST Search (Forced on PC)" active={true} onClick={() => {}} disabled={true} />
+            ) : isDesktop === false ? (
+              <MetroToggle label="Cloud Engine (Forced on Mobile)" active={false} onClick={() => {}} disabled={true} />
+            ) : (
+              <MetroToggle label="FAST Search (PC Only)" active={useLocalEngine} onClick={handleLocalEngineToggle} />
+            )}
           </div>
 
           {/* Campaign + actions */}
